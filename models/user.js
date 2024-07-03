@@ -45,7 +45,13 @@ const UserSchema = new Schema({
                 ref : 'Address'
             }
         }
-    ] 
+    ],
+    token : String,
+    tokenExpirationTime : Date,
+    admin : {
+        type : Boolean,
+        default : false
+    }
 });
 
 module.exports = mongoose.model("User" , UserSchema);

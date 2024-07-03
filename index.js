@@ -6,7 +6,21 @@ app.use(require('body-parser').json());
 require("dotenv").config();
 
 
-app.use("/auth" , require("./routes/authentication"));
+app.use(require("./routes/authentication"));
+app.use('/admin' , require("./routes/admin"));
+
+app.use((error , req , res , next) => {
+    console.log(error);
+    let status;
+    if(!error.statusCode){
+        status = 500;
+    }
+    else status = error.statusCode;
+    const message = error.message;
+    const data = error.data;
+    res.status(status).json({message : message , data : data});
+})
+
 
 mongoose.connect(process.env.MONGODB_URI)
 .then(res => {
