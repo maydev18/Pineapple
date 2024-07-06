@@ -20,11 +20,7 @@ const ProductSchema = new Schema({
         type : String,
         required : true
     },
-    moreImages : [
-        {
-            type : String
-        }
-    ],
+    moreImages : [],
     small : {
         type : Number,
         default : 0

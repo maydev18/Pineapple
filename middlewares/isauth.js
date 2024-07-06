@@ -18,7 +18,6 @@ module.exports = (req , res , next)=>{
         }
         req.userEmail = decodedToken.email;
         req.admin = decodedToken.admin;
-        console.log(req.userEmail , req.admin);
         next();
     }
     catch(err){

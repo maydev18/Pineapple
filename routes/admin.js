@@ -5,21 +5,44 @@ const isauth = require("../middlewares/isauth");
 const isadmin = require("../middlewares/isadmin");
 const adminController = require("../controllers/adminController");
 const {body} = require("express-validator");
+const multer = require("multer");
+const multerSetup = require('../utils/multerSetup');
+
+const upload = multer({
+    storage : multerSetup.fileStorge,
+    fileFilter : multerSetup.fileFilter
+});
 router.put("/add-product" ,
     isauth ,
     isadmin ,
+    upload.array('productImages', 10),
     [
-        body('title').trim().toLowerCase(),
-        body('description').trim().toLowerCase(),
-        body('price').trim().isInt({min : 50 , max : 100000}).withMessage("Please enter only appropriate price"),
-        body('small').trim().isInt({min : 0 , max : 10000}).withMessage("Please enter only appropriate quantity of small"),
-        body('medium').trim().isInt({min : 0 , max : 10000}).withMessage("Please enter only appropriate quantity of medium"),
-        body('large').trim().isInt({min : 0 , max : 10000}).withMessage("Please enter only appropriate quantity of large"),
-        body('extraLarge').trim().isInt({min : 0 , max : 10000}).withMessage("Please enter only appropriate quantity of extra large"),
-        body('doubleExtraLarge').trim().isInt({min : 0 , max : 10000}).withMessage("Please enter only appropriate quantity of double extra large"),
+        body('title').trim().isLength({min:5 , max : 150}).withMessage("Please enter title of length 5-150").toLowerCase(),
+        body('description').trim().isLength({min:20 , max: 1500}).withMessage("Please enter title of length 20-1500").toLowerCase(),
+        body('price').isNumeric({min : 100 , max : 10000}).withMessage("Please enter a correct value of price"),
+        body('small').isNumeric({min : 0 , max : 10000}).withMessage("Please enter a correct value of small size"),
+        body('medium').isNumeric({min : 0 , max : 10000}).withMessage("Please enter a correct value of medium size"),
+        body('large').isNumeric({min : 0 , max : 10000}).withMessage("Please enter a correct value of large size"),
+        body('extraLarge').isNumeric({min : 0 , max : 10000}).withMessage("Please enter a correct value of extra large size"),
+        body('doubleExtraLarge').isNumeric({min : 0 , max : 10000}).withMessage("Please enter a correct value of double extra large size")
     ], 
     adminController.addProduct
 );
+router.post("/edit-product" , 
+    isauth,
+    isadmin,
+    [
+        body('title').trim().isLength({min:5 , max : 150}).withMessage("Please enter title of length 5-150").toLowerCase(),
+        body('description').trim().isLength({min:20 , max: 1500}).withMessage("Please enter title of length 20-1500").toLowerCase(),
+        body('price').isNumeric({min : 100 , max : 10000}).withMessage("Please enter a correct value of price"),
+        body('small').isNumeric({min : 0 , max : 10000}).withMessage("Please enter a correct value of small size"),
+        body('medium').isNumeric({min : 0 , max : 10000}).withMessage("Please enter a correct value of medium size"),
+        body('large').isNumeric({min : 0 , max : 10000}).withMessage("Please enter a correct value of large size"),
+        body('extraLarge').isNumeric({min : 0 , max : 10000}).withMessage("Please enter a correct value of extra large size"),
+        body('doubleExtraLarge').isNumeric({min : 0 , max : 10000}).withMessage("Please enter a correct value of double extra large size")
+    ],
+    adminController.editProduct
+)
 
 
 

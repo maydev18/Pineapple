@@ -1,14 +1,20 @@
 const express = require("express");
 const app = express();
 const mongoose = require('mongoose');
+
+const cors = require("cors");
+app.use(cors({
+    "origin": "*",
+    "methods": "GET,HEAD,PUT,PATCH,POST,DELETE"
+}));
 app.use(require('body-parser').json());
 
 require("dotenv").config();
 
-
+app.use(require("./routes/shop"));
 app.use(require("./routes/authentication"));
 app.use('/admin' , require("./routes/admin"));
-
+app.use(express.static("./images"));
 app.use((error , req , res , next) => {
     console.log(error);
     let status;

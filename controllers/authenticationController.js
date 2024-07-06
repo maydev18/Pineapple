@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const mail = require("../utils/sendEmail");
 const verify = require("../utils/verify");
 const jwt = require("jsonwebtoken");
+
 exports.signup = async (req , res , next) => {
     try{
         //checking for validation errors
@@ -11,7 +12,6 @@ exports.signup = async (req , res , next) => {
         if(!err.isEmpty()){
             const error = new Error(err.array()[0].msg);
             error.statusCode = 422;
-            console.log(error);
             throw error;
         }
         //creating a new user
@@ -30,7 +30,7 @@ exports.signup = async (req , res , next) => {
         res.status(201).json({
             message : "Account created, kindly open your gmail account and click on the verification link in order to login",
             email : createdUser.email,
-            verified : false,
+            verified : false
         })
     }
     catch(err){
@@ -76,7 +76,6 @@ exports.login = async (req , res , next) => {
         if(!err.isEmpty()){
             const error = new Error(err.array()[0].msg);
             error.statusCode = 422;
-            console.log(error);
             throw error;
         }
         const email = req.body.email;

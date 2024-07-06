@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="productImages" multiple />
+        <button type="submit">Upload</button>
+    </form>      
+</body>
+</html>
+<script>
+    document.getElementById('uploadForm').onsubmit = async function(event) {
+        event.preventDefault();
+        const fileInput = document.getElementById('fileInput');
+        const formData = new FormData();
+        formData.append('title', 'tshirt');
+        formData.append('description', 'comFORtable tShirt');
+        formData.append('price', 500);
+        formData.append('small', 21);
+        formData.append('medium', 12);
+        formData.append('large', 10);
+        formData.append('extraLarge', 1);
+        formData.append('doubleExtraLarge', 3);
+
+    for (const file of fileInput.files) {
+      formData.append('productImages', file);
+    }
+        const response = await fetch('http://localhost:8080/admin/add-product', {
+            method: 'PUT',
+            body: formData,
+            headers: {
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1zNzcyMjU0QGdtYWlsLmNvbSIsImFkbWluIjp0cnVlLCJpYXQiOjE3MjAwNDE1OTQsImV4cCI6MTcyMjYzMzU5NH0.ZQTmyv9hW2cDV58Iim5nehwTTx86F7-mD7-mJr-QvFk' ,// replace with your token
+            }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Upload successful:', data);
+        } else {
+            console.error('Upload failed');
+        }
+    };
+  </script>
