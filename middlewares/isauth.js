@@ -16,7 +16,7 @@ module.exports = (req , res , next)=>{
                 loggedin : false
             })
         }
-        req.userEmail = decodedToken.email;
+        req.userID = decodedToken.userID;
         req.admin = decodedToken.admin;
         next();
     }

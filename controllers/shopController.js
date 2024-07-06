@@ -7,7 +7,7 @@ exports.getProducts = async (req ,res , next) => {
         const productsToSkip = (page-1) * ITEMS_PER_PAGE;
 
         if(totalProducts == 0){
-            throw new Error("No products found").statusCode(404);
+            return res.status(404).json({message : "Products not found"});
         }
         const products = await Product.find().select('_id title price mainImage').skip(productsToSkip).limit(ITEMS_PER_PAGE);
         return res.status(200).json({
