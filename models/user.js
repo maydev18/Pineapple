@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-
 //Here the size is encoded as small(0) , medium(1) , large(2) , XL(3) , XXL(4)
 
 const UserSchema = new Schema({
@@ -22,6 +21,7 @@ const UserSchema = new Schema({
     },
     cart : [
         {
+            _id : false,
             productID : {
                 type : Schema.Types.ObjectId,
                 required : true,
@@ -32,13 +32,14 @@ const UserSchema = new Schema({
                 required : true, 
             },
             size : {
-                type : Number,
+                type : String,
                 required : true
             }
         }
     ],
     addresses : [
         {
+            _id : false,
             addressID : {
                 type : Schema.Types.ObjectId,
                 required : true,
@@ -53,5 +54,40 @@ const UserSchema = new Schema({
         default : false
     }
 });
+
+UserSchema.methods.addToCart = async function (productID , size) {
+    const cartProductIndex = this.cart.findIndex(cartProduct => {
+        return (cartProduct.productID.toString() === productID.toString()) && (cartProduct.size.toString() === size.toString());
+    });
+    let newQuantity = 1;
+    const updatedCart = [...this.cart];
+
+    if (cartProductIndex >= 0) {
+        newQuantity = this.cart[cartProductIndex].quantity + 1;
+        updatedCart[cartProductIndex].quantity = newQuantity;
+    }
+    else {
+        updatedCart.push({ productID: productID, quantity: 1 , size : size});
+    }
+
+    this.cart = updatedCart;
+    return this.save();
+}
+
+UserSchema.methods.deleteFromCart = function(productID , size){
+    const cartProductIndex = this.cart.findIndex(cartProduct => {
+        return (cartProduct.productID.toString() === productID.toString()) && (cartProduct.size.toString() === size.toString());
+    });
+    if(this.cart[cartProductIndex].quantity === 1){
+        const updatedCart = this.cart.filter(item => {
+            return item.productID.toString() !== productID.toString();
+        })
+        this.cart = updatedCart;
+    }
+    else{
+        this.cart[cartProductIndex].quantity--;
+    }
+    return this.save();
+}
 
 module.exports = mongoose.model("User" , UserSchema);
