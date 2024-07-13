@@ -1,8 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-//Here the size is encoded as small(0) , medium(1) , large(2) , XL(3) , XXL(4)
-
 const ProductSchema = new Schema({
     title : {
         type : String,

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-//Here the size is encoded as small(0) , medium(1) , large(2) , XL(3) , XXL(4)
+
 
 const UserSchema = new Schema({
     email : {
@@ -34,6 +34,9 @@ const UserSchema = new Schema({
             size : {
                 type : String,
                 required : true
+            },
+            total : {
+                type : Number
             }
         }
     ],
@@ -89,5 +92,4 @@ UserSchema.methods.deleteFromCart = function(productID , size){
     }
     return this.save();
 }
-
 module.exports = mongoose.model("User" , UserSchema);

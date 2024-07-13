@@ -3,7 +3,9 @@ const User = require("../models/user");
 const ITEMS_PER_PAGE = 10;
 const Address = require("../models/address");
 const {matchedData, validationResult} = require("express-validator");
-const address = require("../models/address");
+const Razorpay = require('razorpay');
+const Order = require('../models/order');
+const crypto = require('crypto');
 exports.getProducts = async (req ,res , next) => {
     try{
         const page = +req.query.page || 1;
@@ -178,6 +180,100 @@ exports.deleteAddress = async (req , res , next) => {
         res.status(200).json({
             message : "Address deleted successfully"
         });
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.subtotal = async (req , res , next) => {
+    try{
+        const userID = req.userID;
+        const cart = await User.findById(userID).select('cart').populate("cart.productID");
+        let total = 0;
+        for(cartItems of cart.cart){
+            total += (cartItems.quantity * cartItems.productID.price);
+        }
+        return res.status(200).json({
+            subtotal : total
+        });
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.checkout = async(req , res , next) => {
+    try{
+        const amount = +req.body.amount;
+        const instance = new Razorpay({
+            key_id : process.env.PAYMENT_ID,
+            key_secret :  process.env.PAYMENT_SECRET,
+        });
+        const options = {
+            amount: amount * 100,
+            currency: "INR",
+            // receipt: order._id
+        };
+        instance.orders.create(options, function(err, order) {
+            if(err){
+                throw err;
+            }
+            return res.status(200).json(order);
+        });
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.validatePayment = async (req , res , next) => {
+    try{
+        const paymentID = req.body.payment_id;
+        const orderID = req.body.order_id;
+        const signature = req.body.signature;
+        const sha = crypto.createHmac("sha256" , process.env.PAYMENT_SECRET);
+        sha.update(`${orderID}|${paymentID}`);
+        const digest = sha.digest("hex");
+        if(digest !== signature){
+            res.status(403).json({
+                message : "signatures does not match payment failed"
+            })
+        }
+        else{
+            res.status(200).json({
+                message : "payment done successfully",
+                orderID : orderID,
+                paymentID : paymentID
+            })
+        }
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.createOrder = async (req , res , next) => {
+    try{
+        const paymentID = req.body.payment_id;
+        const orderID = req.body.order_id;
+        const addressID = req.body.addressID;
+        const address = await Address.findById(addressID);
+        const user = await User.findById(req.userID).populate("cart.productID");
+        const orderproducts = user.cart.map(item  => {
+            return {
+                _id: item.productID._id,
+                price: item.productID.price,
+                quantity: item.quantity,
+                size: item.size
+            };  
+        })
+        user.cart = [];
+        await user.save();
+        const order = await Order.create({
+            products : orderproducts,
+            address : address,
+            user : req.userID,
+            paymentID : paymentID,
+            orderID : orderID
+        })
+        return res.status(201).json(order);
     }
     catch(err){
         next(err);

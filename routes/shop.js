@@ -10,8 +10,8 @@ router.get("/products" , shopController.getProducts);
 router.get("/product/:productID" , shopController.getProduct);
 
 router.get("/cart" , isauth , shopController.getCart);
-router.post("/addToCart" , isauth , shopController.addToCart);
-router.post("/deleteFromCart" , isauth , shopController.deleteFromCart);
+router.post("/add-to-cart" , isauth , shopController.addToCart);
+router.post("/delete-from-Cart" , isauth , shopController.deleteFromCart);
 
 const addressValidator = [
     body('firstLine').trim().isLength({min:10 , max : 1000}).withMessage("Please enter firstLine of address of length 10-1000").toLowerCase(),
@@ -27,4 +27,8 @@ router.post("/add-address" , isauth , addressValidator , shopController.addAddre
 router.post("/edit-address" , isauth , addressValidator , shopController.editAddress);
 router.get("/get-addresses" , isauth , shopController.getAddress);
 router.delete("/delete-address" , isauth , shopController.deleteAddress);
+router.get("/subtotal" , isauth ,  shopController.subtotal);
+router.post("/checkout" , isauth , shopController.checkout);
+router.post("/validate-payment" , isauth , shopController.validatePayment);
+router.post("/create-order" , isauth , shopController.createOrder);
 module.exports = router;
