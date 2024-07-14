@@ -44,7 +44,8 @@ router.post("/edit-product" ,
     adminController.editProduct
 )
 
-
+router.get("/orders" , isauth , isadmin , adminController.getOrders);
+router.post("/complete-order" , isauth , isadmin , adminController.completeOrder);
 
 
 

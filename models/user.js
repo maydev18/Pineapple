@@ -34,9 +34,6 @@ const UserSchema = new Schema({
             size : {
                 type : String,
                 required : true
-            },
-            total : {
-                type : Number
             }
         }
     ],

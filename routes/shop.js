@@ -31,4 +31,9 @@ router.get("/subtotal" , isauth ,  shopController.subtotal);
 router.post("/checkout" , isauth , shopController.checkout);
 router.post("/validate-payment" , isauth , shopController.validatePayment);
 router.post("/create-order" , isauth , shopController.createOrder);
+router.get("/orders" , isauth , shopController.getOrders);
+router.post("/post-review" , isauth , [
+    body('stars').trim().isInt({min : 1 , max : 5}).withMessage("please enter a star value between 1 to 5"),
+    body('content').trim().isLength({min : 1 , max : 1000})
+] , shopController.postReview);
 module.exports = router;

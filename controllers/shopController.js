@@ -6,6 +6,7 @@ const {matchedData, validationResult} = require("express-validator");
 const Razorpay = require('razorpay');
 const Order = require('../models/order');
 const crypto = require('crypto');
+const Review = require("../models/review");
 exports.getProducts = async (req ,res , next) => {
     try{
         const page = +req.query.page || 1;
@@ -29,15 +30,25 @@ exports.getProducts = async (req ,res , next) => {
 
 exports.getProduct = async (req , res , next) => {
     try{
-        const product = await Product.findById(req.params.productID);
+        const productID = req.params.productID;
+        const product = await Product.findById(productID);
         if(!product){
             return res.status(404).json({
                 message : "Product not found with the given ID"
             })
         }
-        return res.status(200).json({
-            product : product
-        })
+        const orders = await Order.find({userID : req.userID});
+        let review = false;
+        for(const order of orders){
+            for(const product of order.products){
+                if(product._id.toString() === productID.toString()){
+                    review = true;
+                    break;
+                }
+            }
+            if(review) break;
+        }
+        return res.status(200).send({ review: review , product : product });
     }
     catch(err){
         next(err);
@@ -263,17 +274,61 @@ exports.createOrder = async (req , res , next) => {
                 quantity: item.quantity,
                 size: item.size
             };  
-        })
+        });
         user.cart = [];
         await user.save();
         const order = await Order.create({
             products : orderproducts,
             address : address,
-            user : req.userID,
+            userID : req.userID,
             paymentID : paymentID,
             orderID : orderID
         })
+        for(const order of orderproducts){
+            await Product.findOneAndUpdate({_id : order._id} , {
+                    $inc : {
+                        [order.size] : -order.quantity
+                    }
+                },
+                {new : false}
+            );
+        }
         return res.status(201).json(order);
+    }
+    catch(err){
+        next(err);
+    }
+}
+
+exports.getOrders = async(req ,res , next) => {
+    try{
+        const orders = await Order.find({userID : req.userID}).select('-_id');
+        return res.status(200).json(orders);
+    }
+    catch(err){
+        next(err);
+    }
+}
+
+exports.postReview = async (req , res , next) => {
+    try{
+        const err = validationResult(req);
+        if(!err.isEmpty()){
+            console.log(err.array());
+            const error = new Error(err.array()[0].msg);
+            error.statusCode = 422;
+            throw error;
+        }
+        const stars = req.body.stars;
+        const content = req.body.content;
+        const productID = req.body.productID;
+        const review = await Review.create({
+            stars : stars,
+            content : content,
+            userID : req.userID,
+            productID : productID
+        })
+        return res.status(201).json(review);
     }
     catch(err){
         next(err);

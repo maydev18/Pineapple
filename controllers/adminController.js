@@ -1,6 +1,6 @@
 const Product = require("../models/product");
-const {validationResult ,matchedData} = require("express-validator")
-
+const {validationResult ,matchedData} = require("express-validator");
+const Order = require("../models/order");
 
 exports.addProduct = async (req , res , next) => {
     try{
@@ -64,6 +64,29 @@ exports.editProduct = async (req , res , next) => {
             message : "Product updated successfully",
             product : product
         });
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.getOrders = async (req ,res , next) => {
+    try{
+        const orders = await Order.find().select('-_id');
+        return res.status(200).json(orders);
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.completeOrder = async (req ,res , next) => {
+    try{
+        const orderID = req.body.orderID;
+        await Order.findOneAndUpdate({orderID : orderID} , {
+            $set : {
+                completed : true
+            }
+        }, {new : false});
+        return res.status(204).json();
     }
     catch(err){
         next(err);
