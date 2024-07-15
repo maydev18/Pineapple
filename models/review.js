@@ -24,6 +24,10 @@ const reviewSchema = new Schema({
         ref : 'Product',
         required : true
     },
+    buyer : {
+        type : String,
+        required : true
+    }
 });
 
 module.exports = mongoose.model('Review' , reviewSchema);

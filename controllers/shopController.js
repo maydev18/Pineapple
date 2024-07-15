@@ -37,18 +37,7 @@ exports.getProduct = async (req , res , next) => {
                 message : "Product not found with the given ID"
             })
         }
-        const orders = await Order.find({userID : req.userID});
-        let review = false;
-        for(const order of orders){
-            for(const product of order.products){
-                if(product._id.toString() === productID.toString()){
-                    review = true;
-                    break;
-                }
-            }
-            if(review) break;
-        }
-        return res.status(200).send({ review: review , product : product });
+        return res.status(200).send({product : product });
     }
     catch(err){
         next(err);
@@ -322,13 +311,94 @@ exports.postReview = async (req , res , next) => {
         const stars = req.body.stars;
         const content = req.body.content;
         const productID = req.body.productID;
+        const buyer = req.body.buyer;
         const review = await Review.create({
             stars : stars,
             content : content,
             userID : req.userID,
-            productID : productID
+            productID : productID,
+            buyer : buyer
         })
         return res.status(201).json(review);
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.getReviews = async (req , res , next) => {
+    try{
+        const productID = req.params.productID;
+        const reviews = await Review.find({productID : productID}).select("-userID -productID");
+        res.status(200).json(reviews);
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.getUserReview = async(req , res , next) => {
+    try{
+        const productID = req.params.productID;
+        const userID = req.userID;
+        const userReviews = await Review.find({productID : productID , userID : userID}).select("-userID -productID");
+        res.status(200).json(userReviews);
+    }
+    catch(err){
+        next(err);
+    }
+}
+
+exports.deleteReview = async (req , res , next) => {
+    try{
+        await Review.findByIdAndDelete(req.body._id);
+        res.status(204).json();
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.editReview = async (req , res , next) => {
+    try{
+        const err = validationResult(req);
+        if(!err.isEmpty()){
+            console.log(err.array());
+            const error = new Error(err.array()[0].msg);
+            error.statusCode = 422;
+            throw error;
+        }
+        const stars = req.body.stars;
+        const content = req.body.content;
+        const buyer = req.body.buyer;
+        const _id = req.body._id;
+        const review = await Review.findByIdAndUpdate(_id , {
+            stars : stars,
+            content : content,
+            buyer : buyer
+        }, {
+            new : true
+        })
+        return res.status(200).json(review);
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.canReview = async (req , res , next) => {
+    try{
+        const productID = req.params.productID;
+        const orders = await Order.find({userID : req.userID});
+        let review = false;
+        for(const order of orders){
+            if(order.completed){
+                for(const product of order.products){
+                    if(product._id.toString() === productID.toString()){
+                        review = true;
+                        break;
+                    }
+                }
+            }
+            if(review) break;
+        }
+        res.status(200).json(review);
     }
     catch(err){
         next(err);
