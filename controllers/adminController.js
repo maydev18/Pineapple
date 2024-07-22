@@ -81,7 +81,7 @@ exports.getOrders = async (req ,res , next) => {
 exports.completeOrder = async (req ,res , next) => {
     try{
         const orderID = req.body.orderID;
-        await Order.findOneAndUpdate({orderID : orderID} , {
+        await Order.findOneAndUpdate({orderID : orderID , completed : false} , {
             $set : {
                 completed : true
             }

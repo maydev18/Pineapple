@@ -83,7 +83,7 @@ exports.getCart = async(req , res , next) => {
             path: 'cart.productID',
             select: 'title price mainImage' 
         })
-        return res.status(200).json(cart);
+        return res.status(200).json(cart.cart);
     }
     catch(err){
         next(err);
@@ -185,7 +185,7 @@ exports.deleteAddress = async (req , res , next) => {
         next(err);
     }
 }
-exports.subtotal = async (req , res , next) => {
+exports.checkout = async(req , res , next) => {
     try{
         const userID = req.userID;
         const cart = await User.findById(userID).select('cart').populate("cart.productID");
@@ -193,23 +193,12 @@ exports.subtotal = async (req , res , next) => {
         for(cartItems of cart.cart){
             total += (cartItems.quantity * cartItems.productID.price);
         }
-        return res.status(200).json({
-            subtotal : total
-        });
-    }
-    catch(err){
-        next(err);
-    }
-}
-exports.checkout = async(req , res , next) => {
-    try{
-        const amount = +req.body.amount;
         const instance = new Razorpay({
             key_id : process.env.PAYMENT_ID,
             key_secret :  process.env.PAYMENT_SECRET,
         });
         const options = {
-            amount: amount * 100,
+            amount: total * 100,
             currency: "INR",
             // receipt: order._id
         };
@@ -226,8 +215,8 @@ exports.checkout = async(req , res , next) => {
 }
 exports.validatePayment = async (req , res , next) => {
     try{
-        const paymentID = req.body.payment_id;
-        const orderID = req.body.order_id;
+        const paymentID = req.body.paymentID;
+        const orderID = req.body.orderID;
         const signature = req.body.signature;
         const sha = crypto.createHmac("sha256" , process.env.PAYMENT_SECRET);
         sha.update(`${orderID}|${paymentID}`);
@@ -251,8 +240,8 @@ exports.validatePayment = async (req , res , next) => {
 }
 exports.createOrder = async (req , res , next) => {
     try{
-        const paymentID = req.body.payment_id;
-        const orderID = req.body.order_id;
+        const paymentID = req.body.paymentID;
+        const orderID = req.body.orderID;
         const addressID = req.body.addressID;
         const address = await Address.findById(addressID);
         const user = await User.findById(req.userID).populate("cart.productID");
@@ -349,7 +338,7 @@ exports.getUserReview = async(req , res , next) => {
 
 exports.deleteReview = async (req , res , next) => {
     try{
-        await Review.findByIdAndDelete(req.body._id);
+        await Review.findByIdAndDelete(req.body.reviewID);
         res.status(204).json();
     }
     catch(err){
@@ -368,7 +357,7 @@ exports.editReview = async (req , res , next) => {
         const stars = req.body.stars;
         const content = req.body.content;
         const buyer = req.body.buyer;
-        const _id = req.body._id;
+        const _id = req.body.reviewID;
         const review = await Review.findByIdAndUpdate(_id , {
             stars : stars,
             content : content,
@@ -387,6 +376,7 @@ exports.canReview = async (req , res , next) => {
         const productID = req.params.productID;
         const orders = await Order.find({userID : req.userID});
         let review = false;
+        console.log(orders);
         for(const order of orders){
             if(order.completed){
                 for(const product of order.products){

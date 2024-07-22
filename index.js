@@ -12,7 +12,7 @@ app.use(require('body-parser').json());
 require("dotenv").config();
 
 app.use(require("./routes/shop"));
-app.use(require("./routes/authentication"));
+app.use('/auth' , require("./routes/authentication"));
 app.use('/admin' , require("./routes/admin"));
 app.use(express.static("./images"));
 app.use((error , req , res , next) => {

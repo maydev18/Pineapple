@@ -31,15 +31,16 @@ router.post("/add-address" , isauth , addressValidator , shopController.addAddre
 router.post("/edit-address" , isauth , addressValidator , shopController.editAddress);
 router.get("/get-addresses" , isauth , shopController.getAddress);
 router.delete("/delete-address" , isauth , shopController.deleteAddress);
-router.get("/subtotal" , isauth ,  shopController.subtotal);
-router.post("/checkout" , isauth , shopController.checkout);
+router.get("/checkout" , isauth , shopController.checkout);
 router.post("/validate-payment" , isauth , shopController.validatePayment);
 router.post("/create-order" , isauth , shopController.createOrder);
 router.get("/orders" , isauth , shopController.getOrders);
+
 router.post("/post-review" , isauth , reviewValidator , shopController.postReview);
+router.post("/edit-review" , isauth , reviewValidator , shopController.editReview);
 router.get("/reviews/:productID" , shopController.getReviews);
 router.get("/user-review/:productID" ,isauth ,  shopController.getUserReview);
 router.delete("/delete-review" , isauth , shopController.deleteReview);
-router.post("/edit-review" , isauth , reviewValidator , shopController.editReview);
 router.get("/can-review/:productID" , isauth , shopController.canReview);
+
 module.exports = router;
