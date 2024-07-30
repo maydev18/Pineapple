@@ -16,7 +16,7 @@ exports.getProducts = async (req ,res , next) => {
         if(totalProducts == 0){
             return res.status(404).json({message : "Products not found"});
         }
-        const products = await Product.find().select('_id title price mainImage').skip(productsToSkip).limit(ITEMS_PER_PAGE);
+        const products = await Product.find().select('_id title price mainImage backImage').skip(productsToSkip).limit(ITEMS_PER_PAGE);
         return res.status(200).json({
             products : products,
             currentPage : page,
@@ -37,7 +37,16 @@ exports.getProduct = async (req , res , next) => {
                 message : "Product not found with the given ID"
             })
         }
-        return res.status(200).send({product : product });
+        return res.status(200).json({product : product });
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.getHomePageProducts = async (req ,res , next) => {
+    try{
+        const products = await Product.find({top : true}).select('_id title price mainImage backImage');
+        return res.status(200).json({products : products});
     }
     catch(err){
         next(err);
@@ -49,6 +58,11 @@ exports.addToCart = async (req , res , next) => {
         const userID = req.userID;
         const productID = req.body.productID;
         const size = req.body.size;
+        if(size !== 'small' && size !== 'medium' && size !== 'large' && size !== 'extraLarge' && size !== 'doubleExtraLarge'){
+            const err = new Error("please enter a valid size");
+            err.statusCode = 422;
+            throw err;
+        }
         const user = await User.findById(userID);
         await user.addToCart(productID , size);
         res.status(200).json({
@@ -65,6 +79,11 @@ exports.deleteFromCart = async(req , res , next) => {
         const userID = req.userID;
         const productID = req.body.productID;
         const size = req.body.size;
+        if(size !== 'small' && size !== 'medium' && size !== 'large' && size !== 'extraLarge' && size !== 'doubleExtraLarge'){
+            const err = new Error("please enter a valid size");
+            err.statusCode = 422;
+            throw err;
+        }
         const user = await User.findById(userID);
         await user.deleteFromCart(productID , size);
         res.status(200).json({
@@ -307,7 +326,7 @@ exports.postReview = async (req , res , next) => {
             userID : req.userID,
             productID : productID,
             buyer : buyer
-        })
+        });
         return res.status(201).json(review);
     }
     catch(err){

@@ -21,12 +21,12 @@ const reviewValidator = [
     body('content').trim().isLength({min : 1 , max : 1000}),
     body('buyer').trim().isLength({min : 2 , max : 100}).withMessage("please enter your correct full name").toLowerCase(),
 ];
-
 router.get("/products" , shopController.getProducts);
+router.get("/top-products" , shopController.getHomePageProducts);
 router.get("/product/:productID" , shopController.getProduct);
 router.get("/cart" , isauth , shopController.getCart);
-router.post("/add-to-cart" , isauth , shopController.addToCart);
-router.post("/delete-from-Cart" , isauth , shopController.deleteFromCart);
+router.post("/add-to-cart" , isauth  , shopController.addToCart);
+router.post("/delete-from-Cart" , isauth  , shopController.deleteFromCart);
 router.post("/add-address" , isauth , addressValidator , shopController.addAddress);
 router.post("/edit-address" , isauth , addressValidator , shopController.editAddress);
 router.get("/get-addresses" , isauth , shopController.getAddress);

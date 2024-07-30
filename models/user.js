@@ -80,7 +80,7 @@ UserSchema.methods.deleteFromCart = function(productID , size){
     });
     if(this.cart[cartProductIndex].quantity === 1){
         const updatedCart = this.cart.filter(item => {
-            return item.productID.toString() !== productID.toString();
+            return (item.productID.toString() !== productID.toString()) || (item.size.toString() !== size.toString());
         })
         this.cart = updatedCart;
     }

@@ -14,11 +14,24 @@ const ProductSchema = new Schema({
         type : Number,
         required : true
     },
+    top : {
+        type : Boolean,
+        required : true,
+        default : false
+    },
     mainImage : {
         type : String,
         required : true
     },
+    backImage : {
+        type : String,
+        required : true
+    },
     moreImages : [],
+    fit : {String},
+    size : {String},
+    washCare : {String},
+    specifications : {String},
     small : {
         type : Number,
         default : 0

@@ -29,7 +29,12 @@ exports.addProduct = async (req , res , next) => {
             extraLarge : data.extraLarge,
             doubleExtraLarge : data.doubleExtraLarge,
             mainImage : filePaths[0],
-            moreImages : [...filePaths.slice(1)],
+            backImage : filePaths[1],
+            moreImages : [...filePaths.slice(2)],
+            size : data.size,
+            fit : data.fit,
+            specifications : data.specifications,
+            washCare : data.washCare
         })
         return res.status(201).json({
             message : "product created",
