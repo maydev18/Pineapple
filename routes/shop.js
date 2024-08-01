@@ -32,7 +32,6 @@ router.post("/edit-address" , isauth , addressValidator , shopController.editAdd
 router.get("/get-addresses" , isauth , shopController.getAddress);
 router.delete("/delete-address" , isauth , shopController.deleteAddress);
 router.get("/checkout" , isauth , shopController.checkout);
-router.post("/validate-payment" , isauth , shopController.validatePayment);
 router.post("/create-order" , isauth , shopController.createOrder);
 router.get("/orders" , isauth , shopController.getOrders);
 

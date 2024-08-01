@@ -7,6 +7,7 @@ const Razorpay = require('razorpay');
 const Order = require('../models/order');
 const crypto = require('crypto');
 const Review = require("../models/review");
+const verify = require('../utils/paymentVerify');
 exports.getProducts = async (req ,res , next) => {
     try{
         const page = +req.query.page || 1;
@@ -232,36 +233,15 @@ exports.checkout = async(req , res , next) => {
         next(err);
     }
 }
-exports.validatePayment = async (req , res , next) => {
-    try{
-        const paymentID = req.body.paymentID;
-        const orderID = req.body.orderID;
-        const signature = req.body.signature;
-        const sha = crypto.createHmac("sha256" , process.env.PAYMENT_SECRET);
-        sha.update(`${orderID}|${paymentID}`);
-        const digest = sha.digest("hex");
-        if(digest !== signature){
-            res.status(403).json({
-                message : "signatures does not match payment failed"
-            })
-        }
-        else{
-            res.status(200).json({
-                message : "payment done successfully",
-                orderID : orderID,
-                paymentID : paymentID
-            })
-        }
-    }
-    catch(err){
-        next(err);
-    }
-}
 exports.createOrder = async (req , res , next) => {
     try{
         const paymentID = req.body.paymentID;
         const orderID = req.body.orderID;
+        const signature = req.body.signature;
         const addressID = req.body.addressID;
+        if(!(verify.validatePayment(paymentID , orderID , signature))){
+            return res.status(422).json({message : "Payment signature cannot be verified"});
+        }
         const address = await Address.findById(addressID);
         const user = await User.findById(req.userID).populate("cart.productID");
         const orderproducts = user.cart.map(item  => {
@@ -269,7 +249,9 @@ exports.createOrder = async (req , res , next) => {
                 _id: item.productID._id,
                 price: item.productID.price,
                 quantity: item.quantity,
-                size: item.size
+                size: item.size,
+                image : item.productID.mainImage,
+                title : item.productID.title
             };  
         });
         user.cart = [];
