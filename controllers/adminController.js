@@ -17,24 +17,24 @@ exports.addProduct = async (req , res , next) => {
                 product_added : false
             })
         }
+        console.log(req.body);
         const filePaths = req.files.map(file => `${process.env.BASE_URL}/${file.filename}`);
-        const data = matchedData(req);
         const product = await Product.create({
-            title : data.title,
-            description : data.description,
-            price : data.price,
-            small : data.small,
-            medium : data.medium,
-            large : data.large,
-            extraLarge : data.extraLarge,
-            doubleExtraLarge : data.doubleExtraLarge,
+            title : req.body.title,
+            description : req.body.description,
+            price : req.body.price,
+            small : req.body.small,
+            medium : req.body.medium,
+            large : req.body.large,
+            extraLarge : req.body.extraLarge,
+            doubleExtraLarge : req.body.doubleExtraLarge,
+            size : req.body.size,
+            fit : req.body.fit,
+            specifications : req.body.specifications,
+            washCare : req.body.washCare,
             mainImage : filePaths[0],
             backImage : filePaths[1],
-            moreImages : [...filePaths.slice(2)],
-            size : data.size,
-            fit : data.fit,
-            specifications : data.specifications,
-            washCare : data.washCare
+            moreImages : [...filePaths.slice(2)]
         })
         return res.status(201).json({
             message : "product created",
@@ -55,15 +55,18 @@ exports.editProduct = async (req , res , next) => {
             throw error;
         }
         const product = await Product.findById(req.body.productId);
-        const data = matchedData(req);
-        product.title = data.title;
-        product.description = data.description;
-        product.price = data.price;
-        product.small = data.small;
-        product.medium = data.medium;
-        product.large = data.large;
-        product.extraLarge = data.extraLarge;
-        product.doubleExtraLarge = data.doubleExtraLarge;
+        product.title = req.body.title;
+        product.description = req.body.description;
+        product.price = req.body.price;
+        product.small = req.body.small;
+        product.medium = req.body.medium;
+        product.large = req.body.large;
+        product.extraLarge = req.body.extraLarge;
+        product.doubleExtraLarge = req.body.doubleExtraLarge;
+        product.size = req.body.size;
+        product.fit = req.body.fit;
+        product.washCare = req.body.washCare;
+        product.specifications = req.body.specifications;
         await product.save();
         return res.status(200).json({
             message : "Product updated successfully",

@@ -28,10 +28,10 @@ const ProductSchema = new Schema({
         required : true
     },
     moreImages : [],
-    fit : {String},
-    size : {String},
-    washCare : {String},
-    specifications : {String},
+    fit : {type : String},
+    size : {type : String},
+    washCare : {type : String},
+    specifications : {type : String},
     small : {
         type : Number,
         default : 0

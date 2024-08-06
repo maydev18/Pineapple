@@ -20,7 +20,11 @@ const productDetailErrorPipeline = [
     body('medium').isInt({min : 0 , max : 10000}).withMessage("Please enter a correct value of medium size"),
     body('large').isInt({min : 0 , max : 10000}).withMessage("Please enter a correct value of large size"),
     body('extraLarge').isInt({min : 0 , max : 10000}).withMessage("Please enter a correct value of extra large size"),
-    body('doubleExtraLarge').isInt({min : 0 , max : 10000}).withMessage("Please enter a correct value of double extra large size")
+    body('doubleExtraLarge').isInt({min : 0 , max : 10000}).withMessage("Please enter a correct value of double extra large size"),
+    body('size').trim().toLowerCase(),
+    body('fit').trim().toLowerCase(),
+    body('specifications').trim().toLowerCase(),
+    body('washCare').trim().toLowerCase()
 ];
 router.put("/add-product" ,
     isauth ,
