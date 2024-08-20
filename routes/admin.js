@@ -14,7 +14,7 @@ const upload = multer({
 });
 const productDetailErrorPipeline = [
     body('title').trim().isLength({min:5 , max : 150}).withMessage("Please enter title of length 5-150").toLowerCase(),
-    body('description').trim().isLength({min:20 , max: 1500}).withMessage("Please enter title of length 20-1500").toLowerCase(),
+    body('description').trim().isLength({min:20 , max: 1500}).withMessage("Please enter description of length 20-1500").toLowerCase(),
     body('price').isInt({min : 100 , max : 10000}).withMessage("Please enter a correct value of price"),
     body('small').isInt({min : 0 , max : 10000}).withMessage("Please enter a correct value of small size"),
     body('medium').isInt({min : 0 , max : 10000}).withMessage("Please enter a correct value of medium size"),

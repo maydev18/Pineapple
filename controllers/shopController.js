@@ -17,7 +17,7 @@ exports.getProducts = async (req ,res , next) => {
         if(totalProducts == 0){
             return res.status(404).json({message : "Products not found"});
         }
-        const products = await Product.find().select('_id title price mainImage backImage').skip(productsToSkip).limit(ITEMS_PER_PAGE);
+        const products = await Product.find().select('_id title price mainImage backImage small medium large extraLarge doubleExtraLarge').skip(productsToSkip).limit(ITEMS_PER_PAGE);
         return res.status(200).json({
             products : products,
             currentPage : page,
@@ -114,7 +114,6 @@ exports.addAddress = async(req , res , next) => {
     try{
         const err = validationResult(req);
         if(!err.isEmpty()){
-            console.log(err.array());
             const error = new Error(err.array()[0].msg);
             error.statusCode = 422;
             throw error;
@@ -150,7 +149,6 @@ exports.editAddress = async(req , res , next) => {
     try{
         const err = validationResult(req);
         if(!err.isEmpty()){
-            console.log(err.array());
             const error = new Error(err.array()[0].msg);
             error.statusCode = 422;
             throw error;
@@ -293,7 +291,6 @@ exports.postReview = async (req , res , next) => {
     try{
         const err = validationResult(req);
         if(!err.isEmpty()){
-            console.log(err.array());
             const error = new Error(err.array()[0].msg);
             error.statusCode = 422;
             throw error;
@@ -350,7 +347,6 @@ exports.editReview = async (req , res , next) => {
     try{
         const err = validationResult(req);
         if(!err.isEmpty()){
-            console.log(err.array());
             const error = new Error(err.array()[0].msg);
             error.statusCode = 422;
             throw error;
@@ -377,7 +373,6 @@ exports.canReview = async (req , res , next) => {
         const productID = req.params.productID;
         const orders = await Order.find({userID : req.userID});
         let review = false;
-        console.log(orders);
         for(const order of orders){
             if(order.completed){
                 for(const product of order.products){

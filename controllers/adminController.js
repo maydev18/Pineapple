@@ -11,13 +11,13 @@ exports.addProduct = async (req , res , next) => {
             error.statusCode = 422;
             throw error;
         }
-        if (!req.files) {
+        if (req.files.length  < 2) {
+            console.log(req.files)
             return res.status(400).json({
                 message : "No file uploaded",
                 product_added : false
             })
         }
-        console.log(req.body);
         const filePaths = req.files.map(file => `${process.env.BASE_URL}/${file.filename}`);
         const product = await Product.create({
             title : req.body.title,
