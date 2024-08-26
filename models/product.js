@@ -51,6 +51,11 @@ const ProductSchema = new Schema({
     doubleExtraLarge : {
         type : Number,
         default : 0
+    },
+    visible : {
+        type : Boolean,
+        required : true,
+        default : false
     }
 });
 

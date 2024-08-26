@@ -28,7 +28,7 @@ const OrderSchema = new Schema({
     orderID : {
         type : String,
         required : true
-    }
+    },
 });
 
 module.exports = mongoose.model("Order" , OrderSchema);

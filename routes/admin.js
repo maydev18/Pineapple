@@ -40,9 +40,11 @@ router.post("/edit-product" ,
     adminController.editProduct
 )
 
+
+router.get("/products" , isauth , isadmin , adminController.getProducts);
 router.get("/orders" , isauth , isadmin , adminController.getOrders);
 router.post("/complete-order" , isauth , isadmin , adminController.completeOrder);
-
+router.get("/toggle-visibility/:productID" , isauth , isadmin , adminController.toggleVisibility);
 
 
 

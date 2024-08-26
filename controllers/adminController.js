@@ -1,7 +1,16 @@
 const Product = require("../models/product");
 const {validationResult ,matchedData} = require("express-validator");
 const Order = require("../models/order");
-
+const mongoose = require("mongoose");
+exports.getProducts = async (req , res , next) => {
+    try{
+        const pro = await Product.find();
+        return res.status(200).json(pro);
+    }
+    catch(err){
+        next(err);
+    }
+}
 exports.addProduct = async (req , res , next) => {
     try{
         const err = validationResult(req);
@@ -94,6 +103,19 @@ exports.completeOrder = async (req ,res , next) => {
                 completed : true
             }
         }, {new : false});
+        return res.status(204).json();
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.toggleVisibility = async (req , res , next) => {
+    try{
+        const productID = req.params.productID;
+        await Product.updateOne(
+            { _id: productID },
+            [{ $set: { visible: { $not: "$visible" } } }] 
+        );
         return res.status(204).json();
     }
     catch(err){

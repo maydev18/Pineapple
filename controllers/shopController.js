@@ -1,6 +1,5 @@
 const Product = require("../models/product");
 const User = require("../models/user");
-const ITEMS_PER_PAGE = 10;
 const Address = require("../models/address");
 const {matchedData, validationResult} = require("express-validator");
 const Razorpay = require('razorpay');
@@ -8,16 +7,18 @@ const Order = require('../models/order');
 const crypto = require('crypto');
 const Review = require("../models/review");
 const verify = require('../utils/paymentVerify');
+const mongoose = require('mongoose')
+const ITEMS_PER_PAGE = 12;
 exports.getProducts = async (req ,res , next) => {
     try{
         const page = +req.query.page || 1;
-        const totalProducts = await Product.find().countDocuments();
+        const totalProducts = await Product.find({visible : true}).countDocuments();
         const productsToSkip = (page-1) * ITEMS_PER_PAGE;
 
         if(totalProducts == 0){
             return res.status(404).json({message : "Products not found"});
         }
-        const products = await Product.find().select('_id title price mainImage backImage small medium large extraLarge doubleExtraLarge').skip(productsToSkip).limit(ITEMS_PER_PAGE);
+        const products = await Product.find({visible : true}).select('_id title price mainImage backImage small medium large extraLarge doubleExtraLarge').skip(productsToSkip).limit(ITEMS_PER_PAGE);
         return res.status(200).json({
             products : products,
             currentPage : page,
@@ -54,6 +55,20 @@ exports.getHomePageProducts = async (req ,res , next) => {
     }
 }
 
+exports.getCart = async(req , res , next) => {
+    try{
+        const userID = req.userID;
+        const cart = await User.findById(userID).select('cart').populate({
+            path: 'cart.productID',
+            select: 'title price mainImage' 
+        })
+        return res.status(200).json(cart.cart);
+    }
+    catch(err){
+        next(err);
+    }
+}
+
 exports.addToCart = async (req , res , next) => {
     try{
         const userID = req.userID;
@@ -66,9 +81,11 @@ exports.addToCart = async (req , res , next) => {
         }
         const user = await User.findById(userID);
         await user.addToCart(productID , size);
-        res.status(200).json({
-            message : "Item added to the cart"
-        })
+        const updatedUser = await User.findById(userID).populate({
+            path: 'cart.productID',
+            select: 'title price mainImage'
+        });
+        res.status(200).json(updatedUser.cart);
     }
     catch(err){
         next(err);
@@ -87,28 +104,17 @@ exports.deleteFromCart = async(req , res , next) => {
         }
         const user = await User.findById(userID);
         await user.deleteFromCart(productID , size);
-        res.status(200).json({
-            message : "Item removed to the cart"
-        })
+        const updatedUser = await User.findById(userID).populate({
+            path: 'cart.productID',
+            select: 'title price mainImage'
+        });
+        res.status(200).json(updatedUser.cart);
     }
     catch(err){
         next(err);
     }
 }
 
-exports.getCart = async(req , res , next) => {
-    try{
-        const userID = req.userID;
-        const cart = await User.findById(userID).select('cart').populate({
-            path: 'cart.productID',
-            select: 'title price mainImage' 
-        })
-        return res.status(200).json(cart.cart);
-    }
-    catch(err){
-        next(err);
-    }
-}
 
 exports.addAddress = async(req , res , next) => {
     try{
@@ -211,6 +217,9 @@ exports.checkout = async(req , res , next) => {
         for(cartItems of cart.cart){
             total += (cartItems.quantity * cartItems.productID.price);
         }
+        if(total === 0){
+            throw new Error("total cannot be 0");
+        }
         const instance = new Razorpay({
             key_id : process.env.PAYMENT_ID,
             key_secret :  process.env.PAYMENT_SECRET,
@@ -249,7 +258,8 @@ exports.createOrder = async (req , res , next) => {
                 quantity: item.quantity,
                 size: item.size,
                 image : item.productID.mainImage,
-                title : item.productID.title
+                title : item.productID.title,
+                reviewed : false
             };  
         });
         user.cart = [];
@@ -291,6 +301,7 @@ exports.postReview = async (req , res , next) => {
     try{
         const err = validationResult(req);
         if(!err.isEmpty()){
+            console.log(err.array());
             const error = new Error(err.array()[0].msg);
             error.statusCode = 422;
             throw error;
@@ -299,6 +310,14 @@ exports.postReview = async (req , res , next) => {
         const content = req.body.content;
         const productID = req.body.productID;
         const buyer = req.body.buyer;
+        const orderID = req.body.orderID;
+        const result = await Order.updateOne(
+            { 
+              orderID: orderID, 
+              products: { $elemMatch: { _id: new mongoose.Types.ObjectId(productID) } } 
+            },
+            { $set: { "products.$.reviewed": true } }
+        );
         const review = await Review.create({
             stars : stars,
             content : content,
