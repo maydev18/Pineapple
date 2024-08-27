@@ -15,15 +15,13 @@ exports.addProduct = async (req , res , next) => {
     try{
         const err = validationResult(req);
         if(!err.isEmpty()){
-            console.log(err.array());
             const error = new Error(err.array()[0].msg);
             error.statusCode = 422;
             throw error;
         }
         if (req.files.length  < 2) {
-            console.log(req.files)
             return res.status(400).json({
-                message : "No file uploaded",
+                message : "Please enter " + (2 - req.files.length) + " more files ",
                 product_added : false
             })
         }

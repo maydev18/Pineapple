@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
+const Product = require("./product");
 const Schema = mongoose.Schema;
-
 
 const UserSchema = new Schema({
     email : {
@@ -61,12 +61,18 @@ UserSchema.methods.addToCart = async function (productID , size) {
     });
     let newQuantity = 1;
     const updatedCart = [...this.cart];
-
+    const product = await Product.findById(productID);
     if (cartProductIndex >= 0) {
+        if(this.cart[cartProductIndex].quantity + 1 > product[size]){
+            throw new Error("Required Quantity is out of stock");
+        }
         newQuantity = this.cart[cartProductIndex].quantity + 1;
         updatedCart[cartProductIndex].quantity = newQuantity;
     }
     else {
+        if(product[size] == 0){
+            throw new Error("Required Quantity is out of stock");
+        }
         updatedCart.push({ productID: productID, quantity: 1 , size : size});
     }
 

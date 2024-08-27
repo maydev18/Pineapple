@@ -213,12 +213,18 @@ exports.checkout = async(req , res , next) => {
     try{
         const userID = req.userID;
         const cart = await User.findById(userID).select('cart').populate("cart.productID");
+
+        if(cart.cart.length === 0){
+            throw new Error("Cart cannot be empty");
+        }
+        for(cartItems of cart.cart){
+            if(cartItems.quantity > cartItems.productID[cartItems.size]){
+                throw new Error(cartItems.productID.title + " is out of stock please try later or remove it from your cart to continue ahead");
+            }
+        }
         let total = 0;
         for(cartItems of cart.cart){
             total += (cartItems.quantity * cartItems.productID.price);
-        }
-        if(total === 0){
-            throw new Error("total cannot be 0");
         }
         const instance = new Razorpay({
             key_id : process.env.PAYMENT_ID,
