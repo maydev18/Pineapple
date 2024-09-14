@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const Review = require("../models/review");
 const verify = require('../utils/paymentVerify');
 const mongoose = require('mongoose')
+const ShipRocket = require('./Helper/shiprocket/shiprocket');
 const ITEMS_PER_PAGE = 12;
 exports.getProducts = async (req ,res , next) => {
     try{
@@ -136,6 +137,7 @@ exports.addAddress = async(req , res , next) => {
             phone : data.phone,
             pincode : data.pincode,
             landmark : data.landmark ? data.landmark : "",
+            email : data.email
         })
         const user = await User.findByIdAndUpdate(userID , {
             $push : {
@@ -170,6 +172,7 @@ exports.editAddress = async(req , res , next) => {
             phone : data.phone,
             pincode : data.pincode,
             landmark : data.landmark ? data.landmark : "",
+            email : data.email
         } ,{new : true})
         return res.status(200).json(address);
     }
@@ -191,6 +194,12 @@ exports.getAddress = async (req , res , next) =>{
 
 exports.deleteAddress = async (req , res , next) => {
     try{
+        const err = validationResult(req);
+        if(!err.isEmpty()){
+            const error = new Error(err.array()[0].msg);
+            error.statusCode = 422;
+            throw error;
+        }
         const userID = req.userID;
         const addressID = req.body.addressID;
         await User.findByIdAndUpdate(userID , {
@@ -209,19 +218,22 @@ exports.deleteAddress = async (req , res , next) => {
         next(err);
     }
 }
+function checkOutOfStock(cart){
+    if(cart.length === 0){
+        throw new Error("Cart cannot be empty");
+    }
+    for(cartItems of cart){
+        if(cartItems.quantity > cartItems.productID[cartItems.size]){
+            throw new Error(cartItems.productID.title + " is out of stock please try later or remove it from your cart to continue ahead");
+        }
+    }
+}
 exports.checkout = async(req , res , next) => {
     try{
         const userID = req.userID;
         const cart = await User.findById(userID).select('cart').populate("cart.productID");
-
-        if(cart.cart.length === 0){
-            throw new Error("Cart cannot be empty");
-        }
-        for(cartItems of cart.cart){
-            if(cartItems.quantity > cartItems.productID[cartItems.size]){
-                throw new Error(cartItems.productID.title + " is out of stock please try later or remove it from your cart to continue ahead");
-            }
-        }
+        //checking if out of stock
+        checkOutOfStock(cart.cart);
         let total = 0;
         for(cartItems of cart.cart){
             total += (cartItems.quantity * cartItems.productID.price);
@@ -246,17 +258,24 @@ exports.checkout = async(req , res , next) => {
         next(err);
     }
 }
+
 exports.createOrder = async (req , res , next) => {
     try{
         const paymentID = req.body.paymentID;
         const orderID = req.body.orderID;
         const signature = req.body.signature;
         const addressID = req.body.addressID;
-        if(!(verify.validatePayment(paymentID , orderID , signature))){
+        const paymentMethod = req.body.method;
+        if(paymentMethod !== 'cod' && paymentMethod !== 'prepaid'){
+            return res.status(400).json({message : "Please enter a valid payment method"});
+        }
+        if(paymentMethod === 'prepaid' && !(verify.validatePayment(paymentID , orderID , signature))){
             return res.status(422).json({message : "Payment signature cannot be verified"});
         }
         const address = await Address.findById(addressID);
         const user = await User.findById(req.userID).populate("cart.productID");
+        //checking if out of stock or not
+        checkOutOfStock(user.cart);
         const orderproducts = user.cart.map(item  => {
             return {
                 _id: item.productID._id,
@@ -270,13 +289,14 @@ exports.createOrder = async (req , res , next) => {
         });
         user.cart = [];
         await user.save();
-        const order = await Order.create({
+        let orderDetails = {
             products : orderproducts,
             address : address,
             userID : req.userID,
-            paymentID : paymentID,
-            orderID : orderID
-        })
+            paymentID : paymentID ? paymentID : "CODPAY" + Date.now(),
+            orderID : orderID ? orderID : "CODORDER" + Date.now(),
+            method : paymentMethod
+        };
         for(const order of orderproducts){
             await Product.findOneAndUpdate({_id : order._id} , {
                     $inc : {
@@ -286,6 +306,13 @@ exports.createOrder = async (req , res , next) => {
                 {new : false}
             );
         }
+        const shipRocketData = await ShipRocket.createShipRocketOrder(orderDetails);
+        orderDetails = {
+            ...orderDetails , 
+            shipRocketOrderID : shipRocketData.order_id,
+            shipmentID : shipRocketData.shipment_id
+        }
+        const order = await Order.create(orderDetails);
         return res.status(201).json(order);
     }
     catch(err){
@@ -410,6 +437,17 @@ exports.canReview = async (req , res , next) => {
             if(review) break;
         }
         res.status(200).json(review);
+    }
+    catch(err){
+        next(err);
+    }
+}
+
+exports.test = async(req , res , next) => {
+    try{
+        const token = await ShipRocket.getShipRocketToken();
+        console.log(token);
+        res.status(202).json();
     }
     catch(err){
         next(err);

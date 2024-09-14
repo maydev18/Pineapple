@@ -29,6 +29,19 @@ const OrderSchema = new Schema({
         type : String,
         required : true
     },
+    method : {
+        type : String,
+        required : true
+    },
+    shipRocketOrderID : {
+        type : String
+    },
+    shipmentID : {
+        type : String
+    },
+    awb_code : {
+        type : String
+    }
 });
 
 module.exports = mongoose.model("Order" , OrderSchema);
