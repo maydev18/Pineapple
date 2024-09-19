@@ -50,7 +50,7 @@ function createOrderProducts(products){
         subTotal += product.quantity * product.price;
         totalItems += product.quantity;
         return {
-            "name": `${product.title} (${SizeConverter.getShortSize(product.size)})`,
+            "name": `${product.title}  ${SizeConverter.getSize(product.size)} `,
             "sku": product._id.toString(),
             "units": product.quantity,
             "selling_price": product.price,
@@ -106,7 +106,7 @@ exports.createShipRocketOrder = async(order) => {
             "sub_total": subTotal,
             "length": 30,
             "breadth": 45,
-            "height": totalItems * 5,
+            "height": totalItems * 2,
             "weight": totalItems * 0.5,
             "ewaybill_no": "",
             "customer_gstin": "",

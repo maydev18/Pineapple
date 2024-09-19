@@ -2,6 +2,8 @@ const Product = require("../models/product");
 const {validationResult ,matchedData} = require("express-validator");
 const Order = require("../models/order");
 const mongoose = require("mongoose");
+const ExchangeTickets = require('../models/ExchangeTicket');
+
 exports.getProducts = async (req , res , next) => {
     try{
         const pro = await Product.find();
@@ -115,6 +117,16 @@ exports.toggleVisibility = async (req , res , next) => {
             [{ $set: { visible: { $not: "$visible" } } }] 
         );
         return res.status(204).json();
+    }
+    catch(err){
+        next(err);
+    }
+}
+
+exports.getExchangeTickets = async (req , res , next) => {
+    try{
+        const exchangeTickets = await ExchangeTickets.find();
+        return res.status(200).json(exchangeTickets); 
     }
     catch(err){
         next(err);

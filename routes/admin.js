@@ -45,7 +45,6 @@ router.get("/products" , isauth , isadmin , adminController.getProducts);
 router.get("/orders" , isauth , isadmin , adminController.getOrders);
 router.post("/complete-order" , isauth , isadmin , adminController.completeOrder);
 router.get("/toggle-visibility/:productID" , isauth , isadmin , adminController.toggleVisibility);
-
-
+router.get("/exchange-tickets" , isauth , isadmin , adminController.getExchangeTickets);
 
 module.exports = router;

@@ -184,7 +184,7 @@ exports.editAddress = async(req , res , next) => {
 exports.getAddress = async (req , res , next) =>{
     try{
         const userID = req.userID;
-        const addresses = await User.findById(userID).select('addresses').populate("addresses.addressID");
+        const addresses = await Address.find({userID : userID});
         res.status(200).json(addresses);
     }
     catch(err){
@@ -437,17 +437,6 @@ exports.canReview = async (req , res , next) => {
             if(review) break;
         }
         res.status(200).json(review);
-    }
-    catch(err){
-        next(err);
-    }
-}
-
-exports.test = async(req , res , next) => {
-    try{
-        const token = await ShipRocket.getShipRocketToken();
-        console.log(token);
-        res.status(202).json();
     }
     catch(err){
         next(err);

@@ -14,6 +14,7 @@ require("dotenv").config();
 app.use(require("./routes/shop"));
 app.use('/auth' , require("./routes/authentication"));
 app.use('/admin' , require("./routes/admin"));
+app.use('/exchanges' , require('./routes/exchanges'));
 app.use(express.static("./images"));
 app.use((error , req , res , next) => {
     console.log(error);

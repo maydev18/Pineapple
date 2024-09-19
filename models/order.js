@@ -41,6 +41,11 @@ const OrderSchema = new Schema({
     },
     awb_code : {
         type : String
+    },
+    exchanged : {
+        type : Boolean,
+        default : false,
+        required : true
     }
 });
 

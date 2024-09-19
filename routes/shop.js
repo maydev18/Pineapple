@@ -42,5 +42,4 @@ router.get("/reviews/:productID" , shopController.getReviews);
 router.get("/user-review/:productID" ,isauth ,  shopController.getUserReview);
 router.delete("/delete-review" , isauth , shopController.deleteReview);
 router.get("/can-review/:productID" , isauth , shopController.canReview);
-router.get("/test" , shopController.test);
 module.exports = router;
