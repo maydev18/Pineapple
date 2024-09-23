@@ -6,16 +6,12 @@ exports.addExchangeRequest = async (req , res , next) => {
         const userID = req.userID;
         const orderID = req.body.orderID;
         const exchangeProducts = req.body.exchangeProducts;
-        const order = await Order.findOne({orderID : orderID}).select('time exchanged');
-        if(!order){
-            throw new Error('order doesnot exists');
-        }
-        if(order.exchanged){
-            return res.status(400).json({message : "Cannot create another exchange request for the same order"});
-        }
-        const days = (Date.now() - order.time) / (1000 * 60 * 60 * 24);
-        if(days >= 4){
-            return res.status(401).json({message : "You can not place an exchange request after 4 days"});
+        const order = await Order.findOne({orderID : orderID});
+        //exchange only possible if delivery date is not more than 4 days or above
+        const days = (Date.now() - order.deliveryDate) / (1000 * 60 * 60 * 24);
+
+        if(!order || order.completed === false || order.exchanged || days >= 4){
+            throw new Error('Cannot create an exchange ticket for this order');
         }
         const exchangeTicket = await ExchangeTicket.create({
             userID : new mongoose.Types.ObjectId(userID),

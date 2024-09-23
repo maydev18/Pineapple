@@ -100,7 +100,8 @@ exports.completeOrder = async (req ,res , next) => {
         const orderID = req.body.orderID;
         await Order.findOneAndUpdate({orderID : orderID , completed : false} , {
             $set : {
-                completed : true
+                completed : true,
+                deliveryDate : new Date()
             }
         }, {new : false});
         return res.status(204).json();

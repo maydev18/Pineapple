@@ -1,6 +1,7 @@
 const fs = require('fs');
 const axios = require('axios');
 const SizeConverter = require('../SizeConverter');
+const paymentUtils = require("../../../utils/paymentVerify")
 let shipRocketToken = null;
 let tokenExpiry = null;
 function loadTokenFromFile(){
@@ -51,7 +52,7 @@ function createOrderProducts(products){
         totalItems += product.quantity;
         return {
             "name": `${product.title}  ${SizeConverter.getSize(product.size)} `,
-            "sku": product._id.toString(),
+            "sku": product._id.toString() + SizeConverter.getSmallSize(product.size),
             "units": product.quantity,
             "selling_price": product.price,
             "discount": "",

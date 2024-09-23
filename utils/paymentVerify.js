@@ -10,3 +10,11 @@ exports.validatePayment = async (paymentID , orderID , signature) => {
         return true
     }
 }
+exports.getTotalCartValue = async(cart) => {
+    let totalQuantity = 0;
+    for(cartItems of cart){
+        totalQuantity += cartItems.quantity;
+    }
+    const pricedQuantity = totalQuantity - Math.floor(totalQuantity/2);
+    return pricedQuantity * 500 - 1;
+}

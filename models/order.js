@@ -46,6 +46,9 @@ const OrderSchema = new Schema({
         type : Boolean,
         default : false,
         required : true
+    },
+    deliveryDate : {
+        type : Date
     }
 });
 

@@ -287,8 +287,6 @@ exports.createOrder = async (req , res , next) => {
                 reviewed : false
             };  
         });
-        user.cart = [];
-        await user.save();
         let orderDetails = {
             products : orderproducts,
             address : address,
@@ -297,6 +295,17 @@ exports.createOrder = async (req , res , next) => {
             orderID : orderID ? orderID : "CODORDER" + Date.now(),
             method : paymentMethod
         };
+        const shipRocketData = await ShipRocket.createShipRocketOrder(orderDetails);
+        orderDetails = {
+            ...orderDetails , 
+            shipRocketOrderID : shipRocketData.order_id,
+            shipmentID : shipRocketData.shipment_id
+        }
+        user.cart = [];
+        user.save();
+
+        //decreasing the quantity of bought products in the inventory
+
         for(const order of orderproducts){
             await Product.findOneAndUpdate({_id : order._id} , {
                     $inc : {
@@ -306,14 +315,10 @@ exports.createOrder = async (req , res , next) => {
                 {new : false}
             );
         }
-        const shipRocketData = await ShipRocket.createShipRocketOrder(orderDetails);
-        orderDetails = {
-            ...orderDetails , 
-            shipRocketOrderID : shipRocketData.order_id,
-            shipmentID : shipRocketData.shipment_id
-        }
-        const order = await Order.create(orderDetails);
-        return res.status(201).json(order);
+
+        //creating order at backend
+        const order = Order.create(orderDetails);
+        return res.status(201).json();
     }
     catch(err){
         next(err);
