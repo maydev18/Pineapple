@@ -10,11 +10,22 @@ exports.validatePayment = async (paymentID , orderID , signature) => {
         return true
     }
 }
-exports.getTotalCartValue = async(cart) => {
+exports.getTotalCartValue = (cart) => {
+    let totalAmount = 0;
+    let payableAmount = 0;
     let totalQuantity = 0;
     for(cartItems of cart){
+        totalAmount += cartItems.quantity * cartItems.productID.price;
         totalQuantity += cartItems.quantity;
     }
-    const pricedQuantity = totalQuantity - Math.floor(totalQuantity/2);
-    return pricedQuantity * 500 - 1;
+    payableAmount = totalAmount;
+    if(totalAmount >= 600){
+        payableAmount = payableAmount - ((process.env.DISCOUNT/100) * totalAmount);
+    }
+    return {
+        total : totalAmount,
+        payable : Math.round(payableAmount),
+        totalCartItems : Math.round(totalQuantity),
+        discount : Math.round(totalAmount - payableAmount)
+    };
 }

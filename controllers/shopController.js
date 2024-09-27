@@ -6,9 +6,10 @@ const Razorpay = require('razorpay');
 const Order = require('../models/order');
 const crypto = require('crypto');
 const Review = require("../models/review");
-const verify = require('../utils/paymentVerify');
+const paymentUtil = require('../utils/paymentVerify');
 const mongoose = require('mongoose')
 const ShipRocket = require('./Helper/shiprocket/shiprocket');
+const { disconnect } = require("process");
 const ITEMS_PER_PAGE = 12;
 exports.getProducts = async (req ,res , next) => {
     try{
@@ -63,7 +64,13 @@ exports.getCart = async(req , res , next) => {
             path: 'cart.productID',
             select: 'title price mainImage' 
         })
-        return res.status(200).json(cart.cart);
+        const {payable , totalCartItems , discount} = paymentUtil.getTotalCartValue(cart.cart);
+        return res.status(200).json({
+            cart : cart.cart,
+            total : payable,
+            quantity : totalCartItems,
+            discount : discount
+        });
     }
     catch(err){
         next(err);
@@ -86,7 +93,13 @@ exports.addToCart = async (req , res , next) => {
             path: 'cart.productID',
             select: 'title price mainImage'
         });
-        res.status(200).json(updatedUser.cart);
+        const {payable , totalCartItems , discount} = paymentUtil.getTotalCartValue(updatedUser.cart);
+        return res.status(200).json({
+            cart : updatedUser.cart,
+            total : payable,
+            quantity : totalCartItems,
+            discount : discount
+        });
     }
     catch(err){
         next(err);
@@ -109,7 +122,13 @@ exports.deleteFromCart = async(req , res , next) => {
             path: 'cart.productID',
             select: 'title price mainImage'
         });
-        res.status(200).json(updatedUser.cart);
+        const {payable , totalCartItems , discount} = paymentUtil.getTotalCartValue(updatedUser.cart);
+        return res.status(200).json({
+            cart : updatedUser.cart,
+            total : payable,
+            quantity : totalCartItems,
+            discount : discount
+        });
     }
     catch(err){
         next(err);
@@ -234,10 +253,7 @@ exports.checkout = async(req , res , next) => {
         const cart = await User.findById(userID).select('cart').populate("cart.productID");
         //checking if out of stock
         checkOutOfStock(cart.cart);
-        let total = 0;
-        for(cartItems of cart.cart){
-            total += (cartItems.quantity * cartItems.productID.price);
-        }
+        let total = paymentUtil.getTotalCartValue(cart.cart).payable;
         const instance = new Razorpay({
             key_id : process.env.PAYMENT_ID,
             key_secret :  process.env.PAYMENT_SECRET,
@@ -269,7 +285,7 @@ exports.createOrder = async (req , res , next) => {
         if(paymentMethod !== 'cod' && paymentMethod !== 'prepaid'){
             return res.status(400).json({message : "Please enter a valid payment method"});
         }
-        if(paymentMethod === 'prepaid' && !(verify.validatePayment(paymentID , orderID , signature))){
+        if(paymentMethod === 'prepaid' && !(paymentUtil.validatePayment(paymentID , orderID , signature))){
             return res.status(422).json({message : "Payment signature cannot be verified"});
         }
         const address = await Address.findById(addressID);
@@ -284,18 +300,19 @@ exports.createOrder = async (req , res , next) => {
                 size: item.size,
                 image : item.productID.mainImage,
                 title : item.productID.title,
-                reviewed : false
+                reviewed : false,
             };  
         });
+        const {payable , total , totalCartItems} = paymentUtil.getTotalCartValue(user.cart);
         let orderDetails = {
             products : orderproducts,
             address : address,
             userID : req.userID,
             paymentID : paymentID ? paymentID : "CODPAY" + Date.now(),
             orderID : orderID ? orderID : "CODORDER" + Date.now(),
-            method : paymentMethod
+            method : paymentMethod,
         };
-        const shipRocketData = await ShipRocket.createShipRocketOrder(orderDetails);
+        const shipRocketData = await ShipRocket.createShipRocketOrder(orderDetails , payable , total , totalCartItems);
         orderDetails = {
             ...orderDetails , 
             shipRocketOrderID : shipRocketData.order_id,

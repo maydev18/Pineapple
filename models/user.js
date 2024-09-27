@@ -7,17 +7,14 @@ const UserSchema = new Schema({
         type : String,
         required : true
     },
+    userName : {
+        type : String
+    },
     password : {
         type : String,
-        required : true
     },
     phone : {
         type : Number
-    },
-    verified : {
-        type : Boolean,
-        default : false,
-        required : true
     },
     cart : [
         {
@@ -47,8 +44,6 @@ const UserSchema = new Schema({
             }
         }
     ],
-    token : String,
-    tokenExpirationTime : Date,
     admin : {
         type : Boolean,
         default : false

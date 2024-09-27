@@ -45,11 +45,7 @@ async function fetchShiprocketTokenFromAPI(){
 }
 
 function createOrderProducts(products){
-    let subTotal = 0;
-    let totalItems = 0;
     const updatedProducts = products.map(product => {
-        subTotal += product.quantity * product.price;
-        totalItems += product.quantity;
         return {
             "name": `${product.title}  ${SizeConverter.getSize(product.size)} `,
             "sku": product._id.toString() + SizeConverter.getSmallSize(product.size),
@@ -60,13 +56,13 @@ function createOrderProducts(products){
             "hsn": ""
         }
     });
-    return {updatedProducts : updatedProducts , subTotal : subTotal , totalItems : totalItems};
+    return updatedProducts;
 
 }
-exports.createShipRocketOrder = async(order) => {
+exports.createShipRocketOrder = async(order , payable , total , totalItems) => {
     try{
         const token = await getShipRocketToken();
-        const {updatedProducts , subTotal , totalItems} = createOrderProducts(order.products);
+        const updatedProducts = createOrderProducts(order.products);
         const data = {
             "order_id": order.orderID,
             "order_date": new Date(),
@@ -103,8 +99,8 @@ exports.createShipRocketOrder = async(order) => {
             "shipping_charges": order.method === 'cod' ? 100 : 0,
             "giftwrap_charges": "",
             "transaction_charges": "",
-            "total_discount": "",
-            "sub_total": subTotal,
+            "total_discount": total-payable,
+            "sub_total": total,
             "length": 30,
             "breadth": 45,
             "height": totalItems * 2,
