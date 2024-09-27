@@ -128,6 +128,8 @@ exports.deleteFromCart = async(req , res , next) => {
             total : payable,
             quantity : totalCartItems,
             discount : discount
+
+
         });
     }
     catch(err){
@@ -304,6 +306,10 @@ exports.createOrder = async (req , res , next) => {
             };  
         });
         const {payable , total , totalCartItems} = paymentUtil.getTotalCartValue(user.cart);
+        let orderValue = payable;
+        if(paymentMethod === 'cod'){
+            orderValue += 100;
+        }
         let orderDetails = {
             products : orderproducts,
             address : address,
@@ -311,6 +317,7 @@ exports.createOrder = async (req , res , next) => {
             paymentID : paymentID ? paymentID : "CODPAY" + Date.now(),
             orderID : orderID ? orderID : "CODORDER" + Date.now(),
             method : paymentMethod,
+            total : orderValue
         };
         const shipRocketData = await ShipRocket.createShipRocketOrder(orderDetails , payable , total , totalCartItems);
         orderDetails = {
@@ -356,7 +363,6 @@ exports.postReview = async (req , res , next) => {
     try{
         const err = validationResult(req);
         if(!err.isEmpty()){
-            console.log(err.array());
             const error = new Error(err.array()[0].msg);
             error.statusCode = 422;
             throw error;

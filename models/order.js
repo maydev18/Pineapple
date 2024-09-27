@@ -49,6 +49,9 @@ const OrderSchema = new Schema({
     },
     deliveryDate : {
         type : Date
+    },
+    total : {
+        type : Number
     }
 });
 

@@ -22,7 +22,6 @@ exports.authenticate = async (req , res , next) => {
             userID : user._id,
             admin : user.admin
         } , process.env.JWT_SECRET_KEY , {expiresIn : "30d"});
-        console.log(user);
         return res.status(200).json({token : token , name : user.userName});
     }
     catch(err){

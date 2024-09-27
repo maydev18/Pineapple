@@ -19,7 +19,7 @@ exports.getTotalCartValue = (cart) => {
         totalQuantity += cartItems.quantity;
     }
     payableAmount = totalAmount;
-    if(totalAmount >= 600){
+    if(totalAmount >= process.env.DISCOUNT_ON_ORDERS_ABOVE){
         payableAmount = payableAmount - ((process.env.DISCOUNT/100) * totalAmount);
     }
     return {

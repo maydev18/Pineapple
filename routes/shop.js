@@ -22,10 +22,23 @@ const reviewValidator = [
     body('content').trim().isLength({min : 1 , max : 1000}),
     body('buyer').trim().isLength({min : 2 , max : 100}).withMessage("please enter your correct full name").toLowerCase(),
 ];
+const returnEmptyCartIfUserLoggedOut = (req , res , next) => {
+    const authHeader = req.get("Authorization");
+    const token = authHeader.split(" ")[1];
+    if(token === 'null'){
+        return res.status(200).json({
+            cart : [],
+            total : 0,
+            quantity : 0,
+            discount : 0
+        })
+    }
+    next();
+}
 router.get("/products" , shopController.getProducts);
 router.get("/top-products" , shopController.getHomePageProducts);
 router.get("/product/:productID" , shopController.getProduct);
-router.get("/cart" , isauth , shopController.getCart);
+router.get("/cart" ,returnEmptyCartIfUserLoggedOut, isauth , shopController.getCart);
 router.post("/add-to-cart" , isauth  , shopController.addToCart);
 router.post("/delete-from-Cart" , isauth  , shopController.deleteFromCart);
 router.post("/add-address" , isauth , addressValidator , shopController.addAddress);

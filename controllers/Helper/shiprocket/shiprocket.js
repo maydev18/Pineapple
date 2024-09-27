@@ -120,7 +120,8 @@ exports.createShipRocketOrder = async(order , payable , total , totalItems) => {
         return res.data;
     }
     catch(error){
-        console.log(error.response ? error.response.data : error.message);
+        // console.log(error.response ? error.response.data : error.message);
+        throw error;
     }
 }
 loadTokenFromFile();
