@@ -14,12 +14,13 @@ const OrderSchema = new Schema({
     time : {
         type : Date,
         required : true,
-        default : new Date()
+        default : () => new Date()
     },
-    completed : {
-        type : Boolean,
+    //status 0 = order is placed, 1 = order is shipped , 2 = order is delivered
+    status : {
+        type : Number,
         required : true,
-        default : false
+        default : 0
     },
     paymentID : {
         type : String,
@@ -52,6 +53,10 @@ const OrderSchema = new Schema({
     },
     total : {
         type : Number
+    },
+    cancelled : {
+        type : Boolean,
+        default : false
     }
 });
 

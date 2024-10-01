@@ -10,7 +10,8 @@ const paymentUtil = require('../utils/paymentVerify');
 const mongoose = require('mongoose')
 const ShipRocket = require('./Helper/shiprocket/shiprocket');
 const { disconnect } = require("process");
-const ITEMS_PER_PAGE = 12;
+const {mail} = require("../utils/sendEmail");
+const ITEMS_PER_PAGE = 15;
 exports.getProducts = async (req ,res , next) => {
     try{
         const page = +req.query.page || 1;
@@ -342,6 +343,19 @@ exports.createOrder = async (req , res , next) => {
 
         //creating order at backend
         const order = Order.create(orderDetails);
+
+        //sending email to admin
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: process.env.EMAIL,
+            subject: 'New Order Received',
+            html : `
+                <h3> ${orderDetails.orderID} is placed on the website</h3>
+                <br>
+                <p> Follow this link https://www.thepineapple.in/admin/placedorder to get order details</p>
+            `
+        };
+        mail(mailOptions);
         return res.status(201).json();
     }
     catch(err){
@@ -370,12 +384,13 @@ exports.postReview = async (req , res , next) => {
         const stars = req.body.stars;
         const content = req.body.content;
         const productID = req.body.productID;
+        const size = req.body.size;
         const buyer = req.body.buyer;
         const orderID = req.body.orderID;
         const result = await Order.updateOne(
             { 
               orderID: orderID, 
-              products: { $elemMatch: { _id: new mongoose.Types.ObjectId(productID) } } 
+              products: { $elemMatch: { _id: new mongoose.Types.ObjectId(productID) , size : size , reviewed : false} } 
             },
             { $set: { "products.$.reviewed": true } }
         );
@@ -402,71 +417,32 @@ exports.getReviews = async (req , res , next) => {
         next(err);
     }
 }
-exports.getUserReview = async(req , res , next) => {
-    try{
-        const productID = req.params.productID;
-        const userID = req.userID;
-        const userReviews = await Review.find({productID : productID , userID : userID}).select("-userID -productID");
-        res.status(200).json(userReviews);
+
+exports.markOrderCancelled = async(req , res , next) => {
+    try{    
+        const orderID = req.body.orderID;
+        const order = await Order.findOneAndUpdate(
+            {
+            orderID : orderID, 
+            cancelled : false,
+            status : 0
+            },
+            {
+                $set : {cancelled : true}
+            },
+            {
+                new : true
+            }
+        );
+        ShipRocket.cancelOrder(order.shipRocketOrderID);
+        if(!order){
+            throw new Error("Cannot cancel the given order");
+        }
+        return res.status(201).json({message : "order cancelled successfully"});
     }
     catch(err){
         next(err);
     }
 }
 
-exports.deleteReview = async (req , res , next) => {
-    try{
-        await Review.findByIdAndDelete(req.body.reviewID);
-        res.status(204).json();
-    }
-    catch(err){
-        next(err);
-    }
-}
-exports.editReview = async (req , res , next) => {
-    try{
-        const err = validationResult(req);
-        if(!err.isEmpty()){
-            const error = new Error(err.array()[0].msg);
-            error.statusCode = 422;
-            throw error;
-        }
-        const stars = req.body.stars;
-        const content = req.body.content;
-        const buyer = req.body.buyer;
-        const _id = req.body.reviewID;
-        const review = await Review.findByIdAndUpdate(_id , {
-            stars : stars,
-            content : content,
-            buyer : buyer
-        }, {
-            new : true
-        })
-        return res.status(200).json(review);
-    }
-    catch(err){
-        next(err);
-    }
-}
-exports.canReview = async (req , res , next) => {
-    try{
-        const productID = req.params.productID;
-        const orders = await Order.find({userID : req.userID});
-        let review = false;
-        for(const order of orders){
-            if(order.completed){
-                for(const product of order.products){
-                    if(product._id.toString() === productID.toString()){
-                        review = true;
-                        break;
-                    }
-                }
-            }
-            if(review) break;
-        }
-        res.status(200).json(review);
-    }
-    catch(err){
-        next(err);
-    }
-}
+

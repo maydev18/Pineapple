@@ -16,6 +16,9 @@ const UserSchema = new Schema({
     phone : {
         type : Number
     },
+    picture : {
+        type : String
+    },
     cart : [
         {
             _id : false,

@@ -12,7 +12,7 @@ const reviewSchema = new Schema({
     date : {
         type : Date,
         required : true,
-        default : new Date().toISOString()
+        default : () => new Date()
     },
     userID : {
         type : Schema.Types.ObjectId,

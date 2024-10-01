@@ -124,4 +124,19 @@ exports.createShipRocketOrder = async(order , payable , total , totalItems) => {
         throw error;
     }
 }
+
+exports.cancelOrder = async (orderID) => {
+    try{
+        const token = await getShipRocketToken();
+        const res = await axios.post(process.env.SHIP_ROCKET_BASE_URL + 'orders/cancel' , JSON.stringify({"ids" : [orderID]}) , {
+            headers : {
+                "Content-type" : 'application/json',
+                "authorization" : 'bearer ' + token
+            }
+        });
+    }
+    catch(err){
+        console.log("cannot cancel the order");
+    }
+}
 loadTokenFromFile();

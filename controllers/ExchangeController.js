@@ -1,6 +1,7 @@
 const ExchangeTicket = require('../models/ExchangeTicket');
 const Order = require('../models/order');
 const mongoose = require("mongoose");
+const {mail} = require('../utils/sendEmail');
 exports.addExchangeRequest = async (req , res , next) => {
     try{
         const userID = req.userID;
@@ -20,6 +21,17 @@ exports.addExchangeRequest = async (req , res , next) => {
         });
         order.exchanged = true;
         await order.save();
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: process.env.EMAIL,
+            subject: 'New Exchange Request Received',
+            html : `
+                <h3>Exchange request is received against orderid:-  ${orderID}</h3>
+                <br>
+                <p> Follow this link https://www.thepineapple.in/admin/exchange to get exchange details</p>
+            `
+        };
+        mail(mailOptions);
         return res.status(202).json({
             message : "Exchange request created successfully",
         });

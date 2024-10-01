@@ -27,7 +27,7 @@ exports.addProduct = async (req , res , next) => {
                 product_added : false
             })
         }
-        const filePaths = req.files.map(file => `${process.env.BASE_URL}/${file.filename}`);
+        const filePaths = req.files.map(file => file.location);
         const product = await Product.create({
             title : req.body.title,
             description : req.body.description,
@@ -43,7 +43,7 @@ exports.addProduct = async (req , res , next) => {
             washCare : req.body.washCare,
             mainImage : filePaths[0],
             backImage : filePaths[1],
-            moreImages : [...filePaths.slice(2)]
+            moreImages : filePaths.slice(2)
         })
         return res.status(201).json({
             message : "product created",
@@ -94,15 +94,31 @@ exports.getOrders = async (req ,res , next) => {
         next(err);
     }
 }
-exports.completeOrder = async (req ,res , next) => {
+exports.updateOrderStatus = async (req ,res , next) => {
     try{
         const orderID = req.body.orderID;
-        await Order.findOneAndUpdate({orderID : orderID , completed : false} , {
-            $set : {
-                completed : true,
-                deliveryDate : new Date()
-            }
-        }, {new : false});
+
+        const order = await Order.findOne({ orderID: orderID });
+
+        if (!order || order.status === 2 || order.cancelled) {
+            return res.status(404).json({ message: "cannot update the status of given order" });
+        }
+
+        // Prepare the update object
+        let updateFields = { $inc: { status: 1 } };
+
+        // Set the deliveryDate if the current status is 1 (transitioning from 1 to 2)
+        if (order.status === 1) {
+            updateFields.$set = { deliveryDate: new Date() };
+        }
+
+        // Update the order
+        await Order.findOneAndUpdate(
+            { orderID: orderID },
+            updateFields,
+            { new : false} 
+        );
+
         return res.status(204).json();
     }
     catch(err){

@@ -31,7 +31,7 @@ app.use((error , req , res , next) => {
 
 mongoose.connect(process.env.MONGODB_URI)
 .then(res => {
-    app.listen(process.env.PORT , (err) => {
+    app.listen(process.env.PORT || 8080 , (err) => {
         if(err){
             console.log("Failed to connect to server");
         }

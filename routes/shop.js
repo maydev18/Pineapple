@@ -50,9 +50,6 @@ router.post("/create-order" , isauth , shopController.createOrder);
 router.get("/orders" , isauth , shopController.getOrders);
 
 router.post("/post-review" , isauth , reviewValidator , shopController.postReview);
-router.post("/edit-review" , isauth , reviewValidator , shopController.editReview);
 router.get("/reviews/:productID" , shopController.getReviews);
-router.get("/user-review/:productID" ,isauth ,  shopController.getUserReview);
-router.delete("/delete-review" , isauth , shopController.deleteReview);
-router.get("/can-review/:productID" , isauth , shopController.canReview);
+router.post("/cancel-order" , isauth , shopController.markOrderCancelled);
 module.exports = router;
