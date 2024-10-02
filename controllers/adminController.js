@@ -3,7 +3,7 @@ const {validationResult ,matchedData} = require("express-validator");
 const Order = require("../models/order");
 const mongoose = require("mongoose");
 const ExchangeTickets = require('../models/ExchangeTicket');
-
+const {deleteFilesFromS3} = require("../utils/multerSetup")
 exports.getProducts = async (req , res , next) => {
     try{
         const pro = await Product.find();
@@ -14,6 +14,7 @@ exports.getProducts = async (req , res , next) => {
     }
 }
 exports.addProduct = async (req , res , next) => {
+    let filePaths = req.files.map(file => file.location);
     try{
         const err = validationResult(req);
         if(!err.isEmpty()){
@@ -27,7 +28,6 @@ exports.addProduct = async (req , res , next) => {
                 product_added : false
             })
         }
-        const filePaths = req.files.map(file => file.location);
         const product = await Product.create({
             title : req.body.title,
             description : req.body.description,
@@ -51,6 +51,7 @@ exports.addProduct = async (req , res , next) => {
         });
     }
     catch(err){
+        await deleteFilesFromS3(filePaths);
         next(err);
     }
 }

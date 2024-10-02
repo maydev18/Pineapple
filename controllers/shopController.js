@@ -434,6 +434,18 @@ exports.markOrderCancelled = async(req , res , next) => {
                 new : true
             }
         );
+        
+        //increasing the stock of the cancelled products again
+
+        for(const orderProduct of order.products){
+            await Product.findOneAndUpdate({_id : orderProduct._id} , {
+                    $inc : {
+                        [orderProduct.size] : orderProduct.quantity
+                    }
+                },
+                {new : false}
+            );
+        }
         ShipRocket.cancelOrder(order.shipRocketOrderID);
         if(!order){
             throw new Error("Cannot cancel the given order");
