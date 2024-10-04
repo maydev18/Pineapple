@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
     email : {
         type : String,
-        required : true
+        unique : true
     },
     userName : {
         type : String
@@ -14,9 +14,13 @@ const UserSchema = new Schema({
         type : String,
     },
     phone : {
-        type : Number
+        type : String,
+        unique : true
     },
     picture : {
+        type : String
+    },
+    otp : {
         type : String
     },
     cart : [

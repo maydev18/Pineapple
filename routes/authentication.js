@@ -13,4 +13,6 @@ router.post("/authenticate" , [
     })
 ] , authentication_controller.authenticate);
 
+router.get("/login-with-phone/:phone" , authentication_controller.loginWithMobileNumber);
+router.get("/verify-otp/:phone/:otp" , authentication_controller.verifyOTP);
 module.exports = router;
