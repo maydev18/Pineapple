@@ -45,7 +45,6 @@ exports.loginWithMobileNumber = async(req , res , next) => {
         user.otp = otp;
         await user.save();
         sendSMS(phone , otp);
-        console.log(user);
         return res.status(200).json({"message" : "OTP sent successfully to " + phone});
     }
     catch(err){
@@ -59,6 +58,8 @@ exports.verifyOTP = async (req , res , next) => {
         if(!user){
             throw new Error("cannot verify the otp");
         }
+        user.otp = undefined;
+        user.save();
         const token = jwt.sign({
             userID : user._id,
             admin : user.admin

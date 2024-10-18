@@ -1,28 +1,14 @@
-// Import the SNSClient and PublishCommand from AWS SDK v3
-const { SNSClient, PublishCommand } = require("@aws-sdk/client-sns");
+const axios = require('axios');
+const urlencode = require('urlencode');
 
-// Create an SNS service client
-const snsClient = new SNSClient({
-    region : process.env.REGION,
-    credentials : {
-        secretAccessKey : process.env.SECRET_ACCESS_KEY,
-        accessKeyId : process.env.ACCESS_KEY,
-    }
-}); // Replace with your desired region
-
-
-exports.sendSMS = async (phoneNumber , otp) => {
-    try{
-        const message = "Your OTP to login in thepineapple.in is " + otp;
-        const response = await snsClient.send(
-          new PublishCommand({
-            Message: message,
-            // One of PhoneNumber, TopicArn, or TargetArn must be specified.
-            PhoneNumber: "+91"+phoneNumber,
-          }),
-        );
-    }
-    catch(err){
-        throw new Error("Can not send OTP, please try again");
+exports.sendSMS = async (phoneNumber, otp) => {
+    try {
+        const apikey = process.env.SMS_KEY; // Replace this with your actual Textlocal API key
+        const sender = 'PNAPLE';
+        const msg = encodeURIComponent(`${otp} is your OTP for signing into thepineapple.in%n %n-thepineapple.in`);
+        const data = `apikey=${apikey}&sender=${sender}&numbers=91${phoneNumber}&message=${msg}`;
+        const response = await axios.get(`https://api.textlocal.in/send?${data}`);
+    } catch (error) {
+        console.error("Error sending the sms");
     }
 };
