@@ -1,9 +1,11 @@
 const Product = require("../models/product");
 const {validationResult ,matchedData} = require("express-validator");
 const Order = require("../models/order");
+const User = require('../models/user');
 const mongoose = require("mongoose");
 const ExchangeTickets = require('../models/ExchangeTicket');
 const {deleteFilesFromS3} = require("../utils/multerSetup")
+const fs = require('fs');
 exports.getProducts = async (req , res , next) => {
     try{
         const pro = await Product.find();
@@ -144,6 +146,30 @@ exports.getExchangeTickets = async (req , res , next) => {
     try{
         const exchangeTickets = await ExchangeTickets.find();
         return res.status(200).json(exchangeTickets); 
+    }
+    catch(err){
+        next(err);
+    }
+}
+exports.getUserData = async (req , res , next) => {
+    try{
+        const data = await User.find().select('email phone');
+
+        // Prepare CSV output
+        let csvOutput = 'Email,Phone\n'; // CSV header
+
+        // Loop through the data to format emails and phone numbers
+        data.forEach(user => {
+            const email = user.email ? user.email : ''; // Use empty string if no email
+            const phone = user.phone ? user.phone : ''; // Use empty string if no phone
+            csvOutput += `${email},${phone}\n`; // Append each entry
+        });
+
+        // Save the output to a CSV file
+        fs.writeFileSync('user_data.csv', csvOutput, 'utf8');
+
+        // Send a success response
+        return res.status(200).json({ message: 'Data saved to user_data.csv successfully!' });
     }
     catch(err){
         next(err);

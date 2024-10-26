@@ -5,7 +5,6 @@ const {matchedData, validationResult} = require("express-validator");
 const Razorpay = require('razorpay');
 const Order = require('../models/order');
 const crypto = require('crypto');
-const Review = require("../models/review");
 const paymentUtil = require('../utils/paymentVerify');
 const mongoose = require('mongoose')
 const ShipRocket = require('./Helper/shiprocket/shiprocket');
@@ -35,8 +34,8 @@ exports.getProducts = async (req ,res , next) => {
 
 exports.getProduct = async (req , res , next) => {
     try{
-        const productID = req.params.productID;
-        const product = await Product.findById(productID);
+        const productName = req.params.productName.replace(/-/g, " ");
+        const product = await Product.findOne({title : productName , visible : true});
         if(!product){
             return res.status(404).json({
                 message : "Product not found with the given ID"
@@ -392,26 +391,25 @@ exports.postReview = async (req , res , next) => {
               orderID: orderID, 
               products: { $elemMatch: { _id: new mongoose.Types.ObjectId(productID) , size : size , reviewed : false} } 
             },
-            { $set: { "products.$.reviewed": true } }
+            { $set: { "products.$.reviewed": true }}
         );
-        const review = await Review.create({
-            stars : stars,
-            content : content,
-            userID : req.userID,
-            productID : productID,
-            buyer : buyer
-        });
-        return res.status(201).json(review);
-    }
-    catch(err){
-        next(err);
-    }
-}
-exports.getReviews = async (req , res , next) => {
-    try{
-        const productID = req.params.productID;
-        const reviews = await Review.find({productID : productID}).select("-userID -productID");
-        res.status(200).json(reviews);
+        const pro = await Product.findByIdAndUpdate(
+            productID,
+            { 
+              $push: { 
+                reviews: {
+                  $each: [{
+                    stars: stars,
+                    content: content,
+                    buyer: buyer,
+                  }],
+                  $position: 0 // Adds the new review at the beginning of the array
+                }
+              }
+            },
+            { new: true } // Returns the updated product
+          );          
+        return res.status(201).json("review posted successfully");
     }
     catch(err){
         next(err);

@@ -32,6 +32,28 @@ const ProductSchema = new Schema({
     size : {type : String},
     washCare : {type : String},
     specifications : {type : String},
+    reviews : [
+        {
+            _id : false,
+            stars : {
+                type : Number,
+                required : true
+            },
+            content : {
+                type : String,
+                required : true
+            },
+            date : {
+                type : Date,
+                required : true,
+                default : () => new Date()
+            },
+            buyer : {
+                type : String,
+                required : true
+            }
+        }
+    ],
     small : {
         type : Number,
         default : 0

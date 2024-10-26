@@ -46,5 +46,6 @@ router.get("/orders" , isauth , isadmin , adminController.getOrders);
 router.post("/update-order-status" , isauth , isadmin , adminController.updateOrderStatus);
 router.get("/toggle-visibility/:productID" , isauth , isadmin , adminController.toggleVisibility);
 router.get("/exchange-tickets" , isauth , isadmin , adminController.getExchangeTickets);
+router.get("/get-user-details" , isauth , isadmin , adminController.getUserData);
 
 module.exports = router;

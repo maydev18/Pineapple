@@ -15,7 +15,6 @@ exports.authenticate = async (req , res , next) => {
         if(!user){
             user = await User.create({
                 email : req.body.email,
-                userName : req.body.name,
             })    
         }
         const token = jwt.sign({

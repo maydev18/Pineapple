@@ -37,7 +37,7 @@ const returnEmptyCartIfUserLoggedOut = (req , res , next) => {
 }
 router.get("/products" , shopController.getProducts);
 router.get("/top-products" , shopController.getHomePageProducts);
-router.get("/product/:productID" , shopController.getProduct);
+router.get("/product/:productName" , shopController.getProduct);
 router.get("/cart" ,returnEmptyCartIfUserLoggedOut, isauth , shopController.getCart);
 router.post("/add-to-cart" , isauth  , shopController.addToCart);
 router.post("/delete-from-Cart" , isauth  , shopController.deleteFromCart);
@@ -50,6 +50,5 @@ router.post("/create-order" , isauth , shopController.createOrder);
 router.get("/orders" , isauth , shopController.getOrders);
 
 router.post("/post-review" , isauth , reviewValidator , shopController.postReview);
-router.get("/reviews/:productID" , shopController.getReviews);
 router.post("/cancel-order" , isauth , shopController.markOrderCancelled);
 module.exports = router;
