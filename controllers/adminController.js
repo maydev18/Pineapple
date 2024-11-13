@@ -175,3 +175,33 @@ exports.getUserData = async (req , res , next) => {
         next(err);
     }
 }
+
+exports.getProduct = async (req , res , next) => {
+    try{
+        const productID = req.params.productID;
+        const product = await Product.findById(productID);
+        if(!product){
+            return res.status(404).json({
+                message : "Product not found with the given ID"
+            })
+        }
+        return res.status(200).json({product : product });
+    }
+    catch(err){
+        next(err);
+    }
+}
+
+exports.toggleTopProduct = async (req , res , next) => {
+    try{
+        const productID = req.params.productID;
+        await Product.updateOne(
+            { _id: productID },
+            [{ $set: { top: { $not: "$top" } } }] 
+        );
+        return res.status(204).json();
+    }
+    catch(err){
+        next(err);
+    }
+}

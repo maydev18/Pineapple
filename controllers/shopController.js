@@ -49,7 +49,7 @@ exports.getProduct = async (req , res , next) => {
 }
 exports.getHomePageProducts = async (req ,res , next) => {
     try{
-        const products = await Product.find({top : true}).select('_id title price mainImage backImage');
+        const products = await Product.find({top : true , visible : true}).select('_id title price mainImage backImage');
         return res.status(200).json({products : products});
     }
     catch(err){
