@@ -41,6 +41,7 @@ exports.addProduct = async (req , res , next) => {
             doubleExtraLarge : req.body.doubleExtraLarge,
             size : req.body.size,
             fit : req.body.fit,
+            gender : req.body.gender,
             specifications : req.body.specifications,
             washCare : req.body.washCare,
             mainImage : filePaths[0],
@@ -78,6 +79,7 @@ exports.editProduct = async (req , res , next) => {
         product.fit = req.body.fit;
         product.washCare = req.body.washCare;
         product.specifications = req.body.specifications;
+        product.gender = req.body.gender;
         await product.save();
         return res.status(200).json({
             message : "Product updated successfully",

@@ -78,6 +78,9 @@ const ProductSchema = new Schema({
         type : Boolean,
         required : true,
         default : false
+    },
+    gender : {
+        type : String,
     }
 });
 

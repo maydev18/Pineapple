@@ -14,13 +14,22 @@ const ITEMS_PER_PAGE = 15;
 exports.getProducts = async (req ,res , next) => {
     try{
         const page = +req.query.page || 1;
-        const totalProducts = await Product.find({visible : true}).countDocuments();
+        const gender = req.query.gender;
         const productsToSkip = (page-1) * ITEMS_PER_PAGE;
+        const query = {
+            visible : true
+        }
+        if(gender !== "null"){
+            query.gender = gender
+        }
+        const totalProducts = await Product.find(query).countDocuments();
 
         if(totalProducts == 0){
             return res.status(404).json({message : "Products not found"});
         }
-        const products = await Product.find({visible : true}).select('_id title price mainImage backImage small medium large extraLarge doubleExtraLarge').skip(productsToSkip).limit(ITEMS_PER_PAGE);
+
+        const products = await Product.find(query).select('_id title price mainImage backImage small medium large extraLarge doubleExtraLarge').skip(productsToSkip).limit(ITEMS_PER_PAGE);
+
         return res.status(200).json({
             products : products,
             currentPage : page,

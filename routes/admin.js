@@ -21,6 +21,7 @@ const productDetailErrorPipeline = [
     body('large').isInt({min : 0 , max : 10000}).withMessage("Please enter a correct value of large size"),
     body('extraLarge').isInt({min : 0 , max : 10000}).withMessage("Please enter a correct value of extra large size"),
     body('doubleExtraLarge').isInt({min : 0 , max : 10000}).withMessage("Please enter a correct value of double extra large size"),
+    body('gender').isIn(['man' , 'woman']).withMessage("please enter an appropriate gender"),
     body('size').trim().toLowerCase(),
     body('fit').trim().toLowerCase(),
     body('specifications').trim().toLowerCase(),

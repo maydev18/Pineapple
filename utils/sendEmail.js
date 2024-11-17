@@ -3,15 +3,15 @@ var nodemailer = require('nodemailer');
 var transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'ms772254@gmail.com',
-        pass: 'supkkmdxietlnawm'
+        user: 'pineappleindiaofficial@gmail.com',
+        pass: 'vgwwvracrihxpgll'
     }
 });
 
 exports.mail = (mailOptions) => {
     transporter.sendMail(mailOptions, function (error, info) {
         if (error) {
-            console.log("error in sending mail");
+            console.log(error);
         }
     });
 }
