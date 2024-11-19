@@ -40,6 +40,7 @@ router.post("/edit-product" ,
     productDetailErrorPipeline,
     adminController.editProduct
 )
+router.delete("/delete-product/:productID" , isauth , isadmin , adminController.deleteProduct);
 
 
 router.get("/products" , isauth , isadmin , adminController.getProducts);

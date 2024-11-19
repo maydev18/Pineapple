@@ -10,7 +10,7 @@ const mongoose = require('mongoose')
 const ShipRocket = require('./Helper/shiprocket/shiprocket');
 const { disconnect } = require("process");
 const {mail} = require("../utils/sendEmail");
-const ITEMS_PER_PAGE = 15;
+const ITEMS_PER_PAGE = 16;
 exports.getProducts = async (req ,res , next) => {
     try{
         const page = +req.query.page || 1;

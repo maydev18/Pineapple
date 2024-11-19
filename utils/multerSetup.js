@@ -32,9 +32,10 @@ exports.fileFilter = (req , file , cb) => {
 exports.deleteFilesFromS3 = async (filePaths) => {
     try{
         for(const filePath of filePaths){
+            let key = decodeURIComponent(new URL(filePath).pathname.substring(1));
             const command = new DeleteObjectCommand({
                 "Bucket" : process.env.BUCKET,
-                "Key" : filePath.split('/').pop()
+                "Key" : key
             });
             await s3.send(command); 
         };

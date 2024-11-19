@@ -90,6 +90,24 @@ exports.editProduct = async (req , res , next) => {
         next(err);
     }
 }
+
+exports.deleteProduct = async(req , res , next) => {
+    try{
+        const productID = req.params.productID;
+        const deletedProduct = await Product.findOneAndDelete({_id : productID});
+        if(!deletedProduct){
+            return res.status(500).json({"message" : "error deleting the product"});
+        }
+        //Deleting product Images from S3
+        const filePaths = [deletedProduct.mainImage , ...deletedProduct.moreImages , deletedProduct.backImage];
+        await deleteFilesFromS3(filePaths);
+        return res.status(204).json();
+    }
+    catch(err){
+        next(err);
+    }
+
+}
 exports.getOrders = async (req ,res , next) => {
     try{
         const orders = await Order.find().select('-_id');
