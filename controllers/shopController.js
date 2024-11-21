@@ -154,21 +154,24 @@ exports.addAddress = async(req , res , next) => {
         const userID = req.userID;
         const data = matchedData(req);
         const newAddress = {
-            fullName : data.fullName,
-            firstLine : data.firstLine,
-            secondLine : data.secondLine ? data.secondLine : "",
-            state : data.state,
-            city : data.city,
-            phone : data.phone,
-            pincode : data.pincode,
-            landmark : data.landmark ? data.landmark : "",
-            email : data.email
+            _id: new mongoose.Types.ObjectId(), 
+            fullName: data.fullName,
+            firstLine: data.firstLine,
+            secondLine: data.secondLine ? data.secondLine : "",
+            state: data.state,
+            city: data.city,
+            phone: data.phone,
+            pincode: data.pincode,
+            landmark: data.landmark ? data.landmark : "",
+            email: data.email
         };
-        const user = await User.findByIdAndUpdate(userID , {
-            $push : {
-                addresses : newAddress
+
+        await User.findByIdAndUpdate(userID, {
+            $push: {
+                addresses: newAddress
             },
         });
+
         return res.status(201).json(newAddress);
     }
     catch(err){
@@ -246,7 +249,7 @@ exports.deleteAddress = async (req , res , next) => {
         await User.findByIdAndUpdate(userID , {
             $pull : {
                 addresses : {
-                    _id : addressID
+                    _id : new mongoose.Types.ObjectId(addressID)
                 }
             }
         });
@@ -309,10 +312,12 @@ exports.createOrder = async (req , res , next) => {
         if(paymentMethod === 'prepaid' && !(paymentUtil.validatePayment(paymentID , orderID , signature))){
             return res.status(422).json({message : "Payment signature cannot be verified"});
         }
-        const address = await Address.findById(addressID);
         const user = await User.findById(req.userID).populate("cart.productID");
-        //checking if out of stock or not
+
+        const address = user.addresses.find(add => add._id.toString() === addressID);
+
         checkOutOfStock(user.cart);
+
         const orderproducts = user.cart.map(item  => {
             return {
                 _id: item.productID._id,
