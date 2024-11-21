@@ -32,11 +32,39 @@ const UserSchema = new Schema({
     ],
     addresses : [
         {
-            _id : false,
-            addressID : {
-                type : Schema.Types.ObjectId,
-                required : true,
-                ref : 'Address'
+            firstLine : {
+                type : String,
+                required : true
+            },
+            secondLine : {
+                type : String
+            },
+            fullName : {
+                type : String,
+                required : true
+            },
+            phone : {
+                type : String,
+                required : true
+            },
+            email : {
+                type : String,
+                required : true
+            },
+            pincode : {
+                type : String,
+                required : true
+            },
+            landmark : {
+                type : String,
+            },
+            state : {
+                type : String,
+                required : true
+            },
+            city : {
+                type : String,
+                required : true
             }
         }
     ],
