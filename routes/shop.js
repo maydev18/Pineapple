@@ -14,7 +14,7 @@ const addressValidator = [
     body('email' , "Please enter a valid email address").trim().escape().normalizeEmail().isEmail(),
     body('city' , "Please enter a valid city").trim().escape().isLength({min:2 , max:100}).toLowerCase(),
     body('fullName' , "Please enter a valid full-name").trim().escape().isLength({min : 2 , max : 200}).toLowerCase(),
-    body('landmark' , "please enter a valid landmark").trim().escape().isLength({min : 2 , max : 300}).toLowerCase(),
+    body('landmark').trim().toLowerCase(),
     body('state' , "Please eneter a valid state name").trim().escape().isLength({min: 2 , max : 50}).toLowerCase()
 ];
 const reviewValidator = [

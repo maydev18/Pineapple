@@ -1,6 +1,5 @@
 const Product = require("../models/product");
 const User = require("../models/user");
-const Address = require("../models/address");
 const {matchedData, validationResult} = require("express-validator");
 const Razorpay = require('razorpay');
 const Order = require('../models/order');
@@ -8,7 +7,6 @@ const crypto = require('crypto');
 const paymentUtil = require('../utils/paymentVerify');
 const mongoose = require('mongoose')
 const ShipRocket = require('./Helper/shiprocket/shiprocket');
-const { disconnect } = require("process");
 const {mail} = require("../utils/sendEmail");
 const ITEMS_PER_PAGE = 16;
 exports.getProducts = async (req ,res , next) => {
@@ -137,8 +135,6 @@ exports.deleteFromCart = async(req , res , next) => {
             total : payable,
             quantity : totalCartItems,
             discount : discount
-
-
         });
     }
     catch(err){
@@ -157,8 +153,7 @@ exports.addAddress = async(req , res , next) => {
         }
         const userID = req.userID;
         const data = matchedData(req);
-        const address = await Address.create({
-            userID : userID.toString(),
+        const newAddress = {
             fullName : data.fullName,
             firstLine : data.firstLine,
             secondLine : data.secondLine ? data.secondLine : "",
@@ -168,15 +163,13 @@ exports.addAddress = async(req , res , next) => {
             pincode : data.pincode,
             landmark : data.landmark ? data.landmark : "",
             email : data.email
-        })
+        };
         const user = await User.findByIdAndUpdate(userID , {
             $push : {
-                addresses : {
-                    addressID : address._id
-                }
-            }
+                addresses : newAddress
+            },
         });
-        return res.status(201).json(address);
+        return res.status(201).json(newAddress);
     }
     catch(err){
         next(err);
@@ -191,9 +184,21 @@ exports.editAddress = async(req , res , next) => {
             error.statusCode = 422;
             throw error;
         }
-        const addressID = req.body.addressID;
         const data = matchedData(req);
-        const address = await Address.findByIdAndUpdate(addressID , {
+        const addressID = req.body.addressID;
+        const user = await User.findById(req.userID);
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Find the address by its ID
+        const address = user.addresses.id(addressID);
+        if (!address) {
+            return res.status(404).json({ error: "Address not found" });
+        }
+
+        const updatedAddress = {
             fullName : data.fullName,
             firstLine : data.firstLine,
             secondLine : data.secondLine ? data.secondLine : "",
@@ -203,8 +208,14 @@ exports.editAddress = async(req , res , next) => {
             pincode : data.pincode,
             landmark : data.landmark ? data.landmark : "",
             email : data.email
-        } ,{new : true})
-        return res.status(200).json(address);
+        };
+        Object.keys(updatedAddress).forEach(key => {
+            address[key] = updatedAddress[key];
+        });
+
+        await user.save();
+
+        res.status(200).json(address);
     }
     catch(err){
         next(err);
@@ -214,8 +225,8 @@ exports.editAddress = async(req , res , next) => {
 exports.getAddress = async (req , res , next) =>{
     try{
         const userID = req.userID;
-        const addresses = await Address.find({userID : userID});
-        res.status(200).json(addresses);
+        const user = await User.findById(userID).select('addresses');
+        res.status(200).json(user.addresses);
     }
     catch(err){
         next(err);
@@ -235,11 +246,10 @@ exports.deleteAddress = async (req , res , next) => {
         await User.findByIdAndUpdate(userID , {
             $pull : {
                 addresses : {
-                    addressID : addressID
+                    _id : addressID
                 }
             }
         });
-        await Address.deleteOne({_id : addressID});
         res.status(200).json({
             message : "Address deleted successfully"
         });
