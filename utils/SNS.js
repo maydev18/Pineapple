@@ -8,6 +8,7 @@ exports.sendSMS = async (phoneNumber, otp) => {
         const msg = encodeURIComponent(`${otp} is your OTP for signing into thepineapple.in%n %n-thepineapple.in`);
         const data = `apikey=${apikey}&sender=${sender}&numbers=91${phoneNumber}&message=${msg}`;
         const response = await axios.get(`https://api.textlocal.in/send?${data}`);
+        console.log(response);
     } catch (error) {
         console.error("Error sending the sms");
     }

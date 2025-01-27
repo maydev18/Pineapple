@@ -6,6 +6,7 @@
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
+    "cloc": "^2.2.0-cloc",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "express": "^4.19.2",
@@ -16,6 +17,7 @@
     "multer-s3": "^3.0.1",
     "nodemailer": "^6.9.14",
     "razorpay": "^2.9.4",
+    "socket.io": "^4.8.1",
     "urlencode": "^2.0.0"
   },
   "devDependencies": {

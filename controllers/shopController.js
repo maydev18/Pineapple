@@ -472,6 +472,8 @@ exports.markOrderCancelled = async(req , res , next) => {
         if(!order){
             throw new Error("Cannot cancel the given order");
         }
+        const io = req.app.get("io"); 
+        io.emit("orderCancelled", order);
         return res.status(201).json({message : "order cancelled successfully"});
     }
     catch(err){

@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const http = require('http');
 const mongoose = require('mongoose');
 
 const cors = require("cors");
@@ -7,6 +8,24 @@ app.use(cors({
     "origin": "*",
     "methods": "GET,HEAD,PUT,PATCH,POST,DELETE"
 }));
+const server = http.createServer(app);
+const {Server} = require("socket.io");
+
+const io = new Server(server, {
+    cors: {
+      origin: "http://localhost:3000", // Replace with your frontend's URL
+      methods: ["GET", "POST" , "PUT" , "PATCH" , "POST" , "DELETE"],        // Allowed HTTP methods
+      credentials: true,               // Allow cookies if needed
+    },
+});
+
+app.set("io", io);
+
+io.on("connection" , (socket) => {
+    socket.on("disconnect", () => {
+    });
+});
+
 app.use(require('body-parser').json());
 
 require("dotenv").config();
@@ -31,7 +50,7 @@ app.use((error , req , res , next) => {
 
 mongoose.connect(process.env.MONGODB_URI)
 .then(res => {
-    app.listen(process.env.PORT || 8080 , (err) => {
+    server.listen(process.env.PORT || 8080 , (err) => {
         if(err){
             console.log("Failed to connect to server");
         }

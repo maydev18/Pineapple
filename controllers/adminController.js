@@ -81,6 +81,8 @@ exports.editProduct = async (req , res , next) => {
         product.specifications = req.body.specifications;
         product.gender = req.body.gender;
         await product.save();
+        const io = req.app.get("io"); 
+        io.emit("productUpdated", product);
         return res.status(200).json({
             message : "Product updated successfully",
             product : product
@@ -136,11 +138,14 @@ exports.updateOrderStatus = async (req ,res , next) => {
         }
 
         // Update the order
-        await Order.findOneAndUpdate(
+        const updatedOrder = await Order.findOneAndUpdate(
             { orderID: orderID },
             updateFields,
-            { new : false} 
+            { new : true} 
         );
+
+        const io = req.app.get("io"); 
+        io.emit("orderStatusUpdated", updatedOrder);
 
         return res.status(204).json();
     }
