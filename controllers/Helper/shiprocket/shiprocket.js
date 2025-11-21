@@ -67,7 +67,7 @@ exports.createShipRocketOrder = async(order , payable , total , totalItems) => {
             "order_id": order.orderID,
             "order_date": new Date(),
             "pickup_location": "Home",
-            "channel_id": "5406678",
+            "channel_id": "5422303",
             "comment": "",
             "reseller_name": "",
             "company_name": "thepineapple.in",
